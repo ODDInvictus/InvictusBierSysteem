@@ -70,7 +70,7 @@ trigger:
 volumes:
 - name: deploy_volume_staging
   host:
-    path: /mnt/user/appdata/drone/volumes/rt_staging
+    path: /mnt/user/appdata/drone/volumes/ibs-staging
 - name: deploy_volume_prod
   host: 
-    path: /mnt/user/appdata/drone/volumes/rt
+    path: /mnt/user/appdata/drone/volumes/ibs
