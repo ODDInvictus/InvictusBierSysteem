@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode } from 'react'
 import {
   IconButton,
   Avatar,
@@ -22,20 +22,19 @@ import {
   MenuDivider,
   MenuItem,
   MenuList,
-  Switch,
-} from '@chakra-ui/react';
+} from '@chakra-ui/react'
 import {
   FiHome,
   FiMenu,
   FiChevronDown,
   FiSettings,
-} from 'react-icons/fi';
+} from 'react-icons/fi'
 import { AiOutlineSchedule } from 'react-icons/ai'
 import { MdOutlineInventory2 } from 'react-icons/md'
-import { IconType } from 'react-icons';
+import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
-import { Models } from 'appwrite';
+import { Models } from 'appwrite'
 
 interface SidebarWithHeaderProps {
   profile: Models.Account<Models.Preferences>
@@ -50,13 +49,13 @@ interface LinkItemProps {
 }
 const LinkItems: Array<LinkItemProps> = [
   { name: 'Home', link: '/', icon: FiHome },
-  { name: 'Cleaning Schedule', link: '/cleaning-schedule', icon: AiOutlineSchedule },
-  { name: 'Inventory', link: '/inventory', icon: MdOutlineInventory2 },
-  { name: 'Settings', link: '/settings', icon: FiSettings },
-];
+  { name: 'Kalender', link: '/kalender', icon: AiOutlineSchedule },
+  { name: 'Voorraad', link: '/voorraad', icon: MdOutlineInventory2 },
+  { name: 'Instellingen', link: '/instellingen', icon: FiSettings },
+]
 
 export default function SidebarWithHeader({ profile, children, icon }: SidebarWithHeaderProps) {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure()
   return (
     <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
       <SidebarContent
@@ -81,7 +80,7 @@ export default function SidebarWithHeader({ profile, children, icon }: SidebarWi
         {children}
       </Box>
     </Box>
-  );
+  )
 }
 
 interface SidebarProps extends BoxProps {
@@ -111,8 +110,8 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </NavItem>
       ))}
     </Box>
-  );
-};
+  )
+}
 
 interface NavItemProps extends FlexProps {
   icon?: IconType;
@@ -147,8 +146,8 @@ const NavItem = ({ icon, children, link, ...rest }: NavItemProps) => {
         {children}
       </Flex>
     </Link>
-  );
-};
+  )
+}
 
 interface MobileProps extends FlexProps {
   onOpen: () => void;
@@ -232,5 +231,5 @@ const MobileNav = ({ onOpen, profile, icon, ...rest }: MobileProps) => {
         </Flex>
       </HStack>
     </Flex>
-  );
-};
+  )
+}

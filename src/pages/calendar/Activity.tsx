@@ -1,26 +1,24 @@
 import { Box, Divider, Heading, useColorModeValue, VStack } from '@chakra-ui/react'
 import { useEffect } from 'react'
-import { setTitle } from '../utils/utils'
+import { setTitle } from '../../utils/utils'
 
-/**
- * This is not an actual page,
- * just here to copy to quickly create a new file
- */
+interface ActivityProps {
+  id: number
+}
 
-
-export default function ExamplePage() {
+export default function Activity(props: ActivityProps) {
   
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700'),
   }
   useEffect(() => {
-    setTitle('Home')  
+    setTitle('Home')
   }, [])
 
   return <Box>
     <VStack spacing="20px">
       <Heading as="h1" size="2xl">
-        Invictus Bier Systeem
+        Symposium Invictus
       </Heading>
 
       <Divider borderColor={colors.divider} />

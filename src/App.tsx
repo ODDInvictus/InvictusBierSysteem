@@ -6,13 +6,14 @@ import SidebarWithHeader from './components/SidebarWithHeader'
 import About from './pages/About'
 import Auth from './pages/auth/Auth'
 import ForgotPassword from './pages/auth/ForgotPassword'
-import CleaingSchedule from './pages/CleaningSchedule'
 import Index from './pages/Index'
 import Inventory from './pages/Inventory'
 import LoadingPage from './pages/LoadingPage'
 import NotFound from './pages/NotFound'
 import EditProfile from './pages/profile/EditProfile'
 import Settings from './pages/profile/Settings'
+import Calendar from './pages/calendar/Calendar'
+import Activity from './pages/calendar/Activity'
 
 export default function App() {
   // state
@@ -63,10 +64,14 @@ export default function App() {
 
         <SidebarWithHeader profile={profile!} icon={icon!}>
           <Switch>
-            {/* Normal Routes */}
-            <Route path="/cleaning-schedule"> <CleaingSchedule /> </Route>
-            <Route path="/settings"> <Settings /> </Route>
-            <Route path="/inventory"> <Inventory /> </Route>
+            {/* Kalender */}
+            <Route path="/kalender/:id"> 
+              {(params) => <Activity id={Number.parseInt(params.id)} />}
+            </Route>
+            <Route path="/kalender"> <Calendar /> </Route>
+
+            <Route path="/instellingen"> <Settings /> </Route>
+            <Route path="/voorraad"> <Inventory /> </Route>
 
             {/* User profile */}
             <Route path="/profile"> <EditProfile /> </Route>

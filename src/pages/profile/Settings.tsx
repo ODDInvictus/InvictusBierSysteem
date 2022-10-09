@@ -6,10 +6,10 @@ import LoadingPage from '../LoadingPage'
 
 const pages = {
   'Home': '/',
-  'Cleaning Schedule': '/cleaning-schedule',
-  'Inventory': '/inventory',
+  'Kalender': '/kalender',
+  'Inventory': '/voorraad',
   'Profile': '/profile',
-  'Settings': '/settings',
+  'Settings': '/instellingen',
   'About': '/about',
 }
 
