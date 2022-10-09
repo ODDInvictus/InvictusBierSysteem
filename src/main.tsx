@@ -4,7 +4,6 @@ import './index.css'
 import App from './App'
 import { Client, Databases, Account, Storage, Avatars } from 'appwrite'
 import { ChakraProvider, extendTheme, theme as origTheme } from '@chakra-ui/react'
-import SidebarWithHeader from './components/SidebarWithHeader'
 
 const api = new Client()
 
@@ -33,7 +32,7 @@ const chakraTheme = extendTheme({
         solid: (props: any) => {
           const { colorScheme } = props
           if (colorScheme !== 'blue') {
-            // @ts-ignore
+            // @ts-expect-error niet zo piepen
             return origTheme.components.Alert.variants.solid(props)
           }
           return {

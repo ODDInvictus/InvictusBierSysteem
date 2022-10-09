@@ -20,10 +20,10 @@ export default function NotFound() {
     404
     </Heading>
     <Text fontSize="18px" mt={3} mb={2}>
-    😔 Page Not Found 😔
+      😔 Pagina niet gevonden 😔
     </Text>
     <Text color={'gray.500'} mb={6}>
-    The page you&apos;re looking for does not seem to exist
+      Ik weet niet wat je probeert maar je bent waarschijnlijk gewoon dom.
     </Text>
 
     <Button
@@ -32,7 +32,7 @@ export default function NotFound() {
       color="white"
       onClick={() => setLocation('/')}
       variant="solid">
-    Go to Home
+      Terug naar de bebouwde kom
     </Button>
   </Box>
 }

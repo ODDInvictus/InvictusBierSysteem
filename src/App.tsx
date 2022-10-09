@@ -1,4 +1,4 @@
-import { ScaleFade, useColorMode } from '@chakra-ui/react'
+import { ScaleFade } from '@chakra-ui/react'
 import { Models } from 'appwrite'
 import React, { useEffect, useState } from 'react'
 import { Route, Router, Switch, useLocation } from 'wouter'
@@ -8,15 +8,11 @@ import Auth from './pages/auth/Auth'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import CleaingSchedule from './pages/CleaningSchedule'
 import Index from './pages/Index'
+import Inventory from './pages/Inventory'
 import LoadingPage from './pages/LoadingPage'
 import NotFound from './pages/NotFound'
 import EditProfile from './pages/profile/EditProfile'
 import Settings from './pages/profile/Settings'
-import { getUserPreferences, UserPreferences } from './utils/user'
-
-type UIProps = {
-  c: React.ReactNode
-}
 
 export default function App() {
   // state
@@ -70,6 +66,7 @@ export default function App() {
             {/* Normal Routes */}
             <Route path="/cleaning-schedule"> <CleaingSchedule /> </Route>
             <Route path="/settings"> <Settings /> </Route>
+            <Route path="/inventory"> <Inventory /> </Route>
 
             {/* User profile */}
             <Route path="/profile"> <EditProfile /> </Route>
