@@ -1,0 +1,69 @@
+kind: pipeline
+type: docker
+name: Build
+
+workspace:
+  path: /app
+
+steps:
+- name: build
+  image: node
+  environment:
+    VITE_APPWRITE_PROJECT_ID:
+      from_secret: VITE_APPWRITE_PROJECT_ID
+    VITE_APPWRITE_API_ENDPOINT:
+      from_secret: VITE_APPWRITE_API_ENDPOINT
+    VITE_APPWRITE_COLLECTION_ID:
+      from_secret: VITE_APPWRITE_COLLECTION_ID
+    VITE_APPWRITE_USER_ICON_BUCKET_ID:
+      from_secret: VITE_APPWRITE_USER_ICON_BUCKET_ID
+  commands:
+  - npm install
+  - npm run build
+
+# - name: write-settings
+#   image: node
+#   commands:
+#   - echo "TODO"
+
+- name: deploy_staging
+  image: node
+  volumes:
+  - name: deploy_volume_staging
+    path: /app/deploy
+  commands:
+  - mv /app/dist/* /app/deploy
+  when:
+    branch:
+    - staging
+    - feature/*
+
+- name: deploy_prod
+  image: node
+  volumes:
+  - name: deploy_volume_prod
+    path: /app/deploy
+  commands:
+  - mv /app/dist/* /app/deploy
+  when:
+    branch:
+    - prod
+
+- name: notify
+  image: appleboy/drone-discord
+  settings:
+    webhook_id:
+      from_secret: discord_webhook_id
+    webhook_token:
+      from_secret: discord_webhook_token
+    avatar_url:
+      from_secret: discord_avatar_url
+
+
+volumes:
+- name: deploy_volume_staging
+  host:
+    path: /mnt/user/appdata/drone/volumes/rt_staging
+- name: deploy_volume_prod
+  host: 
+    path: /mnt/user/appdata/drone/volumes/rt
