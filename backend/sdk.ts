@@ -3,7 +3,7 @@ import { config } from 'https://deno.land/x/dotenv/mod.ts'
 
 const client = new sdk.Client()
 
-const c = config({ safe: true })
+const c = config({ safe: true, export: true })
 
 const key = c.IBS_APPWRITE_KEY
 const endpoint = c.IBS_APPWRITE_ENDPOINT
