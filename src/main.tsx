@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 import App from './App'
-import { Client, Databases, Account, Storage, Avatars } from 'appwrite'
+import { Client, Databases, Account, Storage, Avatars, Teams } from 'appwrite'
 import { ChakraProvider, extendTheme, theme as origTheme } from '@chakra-ui/react'
 
 const api = new Client()
@@ -15,12 +15,14 @@ const db = new Databases(api)
 const account = new Account(api)
 const storage = new Storage(api)
 const avatars = new Avatars(api)
+const teams = new Teams(api)
 
 window.api = api
 window.db = db
 window.account = account
 window.storage = storage
 window.avatars = avatars
+window.teams = teams
 
 const chakraTheme = extendTheme({ 
   fonts: {

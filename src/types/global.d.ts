@@ -1,4 +1,4 @@
-import { Client, Databases, Account, Storage, Avatars } from 'appwrite'
+import { Client, Databases, Account, Storage, Avatars, Teams } from 'appwrite'
 
 declare global {
   interface Window {
@@ -7,6 +7,7 @@ declare global {
     account: Account
     storage: Storage
     avatars: Avatars
+    teams: Teams
   }
 
   interface ImportMetaEnv {

@@ -14,6 +14,7 @@ import EditProfile from './pages/profile/EditProfile'
 import Settings from './pages/profile/Settings'
 import Calendar from './pages/calendar/Calendar'
 import Activity from './pages/calendar/Activity'
+import Members from './pages/admin/Members'
 
 export default function App() {
   // state
@@ -72,6 +73,11 @@ export default function App() {
 
             <Route path="/instellingen"> <Settings /> </Route>
             <Route path="/voorraad"> <Inventory /> </Route>
+
+            {/* Admin routes */}
+            <Route path="/admin/members"> <Members /> </Route>
+            {/* <Route path="/admin/"></Route> */}
+            <Route path="/admin"> <NotFound /> </Route>
 
             {/* User profile */}
             <Route path="/profile"> <EditProfile /> </Route>
