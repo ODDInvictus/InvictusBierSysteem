@@ -15,8 +15,8 @@ export default function UploadButton(props: UploadButtonProps) {
   }
 
   return <Box w={props.w}>
-    {/* @ts-ignore */}
-    <input type="file" style={{ display: "none" }} ref={ref} onChange={props.onFileSelect}/>
+    {/* @ts-expect-error rot op met je gezeik over refs */}
+    <input type="file" style={{ display: 'none' }} ref={ref} onChange={props.onFileSelect}/>
     <Button w="full" onClick={selectFile}>Change Icon</Button>
   </Box>
 }
