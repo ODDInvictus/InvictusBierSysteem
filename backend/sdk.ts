@@ -22,3 +22,4 @@ client
 export const db = new sdk.Databases(client)
 export const users = new sdk.Users(client)
 export const teams = new sdk.Teams(client)
+export const storage = new sdk.Storage(client)
