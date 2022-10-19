@@ -18,6 +18,6 @@ Daarna:
 6. Draai de backend met
 `cd backend && denon`
 
-# Environment Variables
+## Environment Variables
 
 Beide de frontend en backend hebben een bestandje genaamd .env.example die je kan kopieren en .env noemen.
