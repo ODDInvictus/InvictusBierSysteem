@@ -15,11 +15,14 @@ import Settings from './pages/profile/Settings'
 import Calendar from './pages/calendar/Calendar'
 import Activity from './pages/calendar/Activity'
 import Members from './pages/admin/Members'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { getRoles, Roles } from './utils/user'
 
 export default function App() {
   // state
   const [loading, setLoading] = useState<boolean>(true)
   const [profile, setProfile] = useState<Models.Account<Models.Preferences>>()
+  const [roles, setRoles]     = useState<Roles[]>()
   const [icon, setIcon]       = useState<URL>()
 
   // nav
@@ -43,6 +46,10 @@ export default function App() {
 
         if (d && d !== '/') setLocation(d)
       })
+      .then(async () => {
+        const r = await getRoles()
+        setRoles(r)
+      })
       .then(load)
       .catch(() => {
         console.log('not logged in')
@@ -63,7 +70,7 @@ export default function App() {
         <Route path="/auth/forgot-password"><ForgotPassword /></Route>
         <Route path="/auth"><Auth /></Route>
 
-        <SidebarWithHeader profile={profile!} icon={icon!}>
+        <SidebarWithHeader profile={profile!} icon={icon!} roles={roles!}>
           <Switch>
             {/* Kalender */}
             <Route path="/kalender/:id"> 
@@ -75,9 +82,12 @@ export default function App() {
             <Route path="/voorraad"> <Inventory /> </Route>
 
             {/* Admin routes */}
-            <Route path="/admin/members"> <Members /> </Route>
-            {/* <Route path="/admin/"></Route> */}
-            <Route path="/admin"> <NotFound /> </Route>
+            <Route path="/admin/leden"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<Members/>} />
+            </Route>
+            <Route path="/admin"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<NotFound/>} />
+            </Route>
 
             {/* User profile */}
             <Route path="/profile"> <EditProfile /> </Route>

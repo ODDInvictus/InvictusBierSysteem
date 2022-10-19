@@ -16,6 +16,8 @@ declare global {
     VITE_APPWRITE_COLLECTION_ID: string
 
     VITE_APPWRITE_USER_ICON_BUCKET_ID: string
+
+    VITE_BACKEND_ENDPOINT: string
   }
 
   interface ImportMeta {

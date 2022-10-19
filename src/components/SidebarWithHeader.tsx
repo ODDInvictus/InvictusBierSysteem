@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import {
   IconButton,
   Avatar,
@@ -35,11 +35,13 @@ import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
 import { Models } from 'appwrite'
+import { getRoles, Roles } from '../utils/user'
 
 interface SidebarWithHeaderProps {
   profile: Models.Account<Models.Preferences>
   icon: URL
   children: ReactNode
+  roles: Roles[]
 }
 
 interface LinkItemProps {
@@ -54,7 +56,7 @@ const LinkItems: Array<LinkItemProps> = [
   { name: 'Instellingen', link: '/instellingen', icon: FiSettings },
 ]
 
-export default function SidebarWithHeader({ profile, children, icon }: SidebarWithHeaderProps) {
+export default function SidebarWithHeader({ profile, children, icon, roles }: SidebarWithHeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
   return (
     <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
@@ -75,7 +77,7 @@ export default function SidebarWithHeader({ profile, children, icon }: SidebarWi
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} profile={profile} icon={icon} />
+      <MobileNav onOpen={onOpen} profile={profile} icon={icon} roles={roles}/>
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -153,15 +155,42 @@ interface MobileProps extends FlexProps {
   onOpen: () => void;
   profile?: Models.Account<Models.Preferences>
   icon?: URL
+  roles: Roles[]
 }
-const MobileNav = ({ onOpen, profile, icon, ...rest }: MobileProps) => {
+const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
+  const [bestRole, setBestRole] = useState<Roles>(Roles.Lid)
+
   const { toggleColorMode } = useColorMode()
-  const [_, setLocation] = useLocation()
+  const [_, setLocation]    = useLocation()
 
   const signOut = async () => {
     await window.account.deleteSessions()
     window.location.href = '/'
   }
+
+  useEffect(() => {
+    const r = roles
+
+    if (r.includes(Roles.Admin)) {
+      return setBestRole(Roles.Admin)
+    }
+
+    if (r.includes(Roles.Senaat)) {
+      return setBestRole(Roles.Senaat)
+    }
+
+    if (r.includes(Roles.Proeflid)) {
+      return setBestRole(Roles.Proeflid)
+    }
+
+    if (r.includes(Roles.Lid)) {
+      return setBestRole(Roles.Lid)
+    }
+
+    if (r.includes(Roles.Colosseum)) {
+      return setBestRole(Roles.Colosseum)
+    }
+  }, [])
 
   return (
     <Flex
@@ -209,7 +238,7 @@ const MobileNav = ({ onOpen, profile, icon, ...rest }: MobileProps) => {
                   ml="2">
                   <Text fontSize="sm">{profile?.name ?? 'Username'}</Text>
                   <Text fontSize="xs" color="gray.600">
-                    {profile?.prefs.role ?? 'User'}
+                    {bestRole}
                   </Text>
                 </VStack>
                 <Box display={{ base: 'none', md: 'flex' }}>

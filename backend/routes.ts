@@ -10,3 +10,9 @@ router.get('/', ctx => {
 router.get('/users/add-role', requireAdmin, ctx => {
   ctx.response.body = 'add-role'
 })
+
+router.get('/users/roles', ctx => {
+  ctx.response.body = [
+    'Admin'
+  ]
+})
