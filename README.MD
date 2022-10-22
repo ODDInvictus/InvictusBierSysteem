@@ -11,12 +11,14 @@ Daarna:
 `git clone git@github.com:ODDInvictus/InvictusBierSysteem.git`
 4. Initializeer je Appwrite project in de appwrite console
 2. Maak een .env in de root en backend map [(Zie puntje environment variables)](#Environment-Variables)
+3. Draai daarna het initialisatie scriptje met
+`deno --allow-env --allow-net run ./backend/setup.ts`
 3. Installeer alle npm pakketten
 `npm install`
 5. Draai de frontend met
 `npm run dev`
 6. Draai de backend met
-`cd backend && denon`
+`cd backend && denon start`
 
 ## Environment Variables
 
