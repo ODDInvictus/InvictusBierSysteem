@@ -1,6 +1,7 @@
-import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, HStack } from '@chakra-ui/react'
+import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, HStack, Center } from '@chakra-ui/react'
 import { Models } from 'appwrite'
 import { useEffect, useRef, useState } from 'react'
+import ICalLink from 'react-icalendar-link'
 import { useRoute } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
@@ -11,8 +12,9 @@ import LoadingPage from '../LoadingPage'
 export default function Activity() {
   
   const [activiteit, setActiviteit] = useState<Activiteit>()
-  const [users, setUsers] = useState<Models.Membership[]>()
-  const [user, setUser] = useState<Models.Account<Models.Preferences>>()
+  const [users, setUsers]           = useState<Models.Membership[]>()
+  const [user, setUser]             = useState<Models.Account<Models.Preferences>>()
+  const [event, setEvent]           = useState<any>({})
 
   const route = useRoute('/kalender/:id')[1]
 
@@ -24,11 +26,20 @@ export default function Activity() {
 
     window.db.getDocument('main', 'activiteiten', route.id)
       .then(a => {
-        setTitle(a.naam)
-        setActiviteit(a as unknown as Activiteit)
+        const activiteit = a as unknown as Activiteit
+        setTitle(activiteit.naam)
+        setActiviteit(activiteit)
+        setEvent({
+          title: activiteit.naam,
+          description: activiteit.omschrijving,
+          startTime: new Date(activiteit.datum),
+          endTime: new Date(new Date(activiteit.datum).getTime() + 5 * 60 * 60 * 1000),
+          location: a.locatie
+        })
       }).then(() => {
         window.teams.listMemberships('lid')
           .then(memberships => setUsers(memberships.memberships))
+          .catch(e => setUsers([]))
       }).then(() => {
         window.account.get()
           .then(setUser)
@@ -69,7 +80,7 @@ export default function Activity() {
 
   return <Box>
     <VStack spacing="20px">
-      <Heading as="h1" size="2xl">
+      <Heading as="h1" size="2xl" textAlign="center">
         {activiteit.naam}
       </Heading>
 
@@ -95,6 +106,16 @@ export default function Activity() {
           <Text>
             <b>Tijd:</b> {formatTime(new Date(activiteit.datum))}
           </Text>
+
+          <Box pt="10px">
+            {/* @ts-expect-error Types kloppen niet */}
+            <ICalLink filename="activiteit.ics" event={event}>
+              <StyledButton>
+                Download ICS
+              </StyledButton>
+            </ICalLink>
+          </Box>
+
         </Card>
 
         <Card title="Aanwezigen" textAlign="center">
@@ -117,13 +138,10 @@ export default function Activity() {
         <Card title="Acties">
           <SimpleGrid columns={2} pt="5px" spacing={3}>
             <StyledButton>
-              Biertelling vooraf
+              Biertelling
             </StyledButton>
             <StyledButton>
-              Biertelling achteraf
-            </StyledButton>
-            <StyledButton>
-              Doe een declaratie
+              Maak declaratie
             </StyledButton>
             <StyledButton>
               Wijzig Activiteit
@@ -152,16 +170,28 @@ function Aanwezigen({ activiteit, users }: AanwezigenProps) {
   }, [activiteit])
 
   return <Box>
-    <SimpleGrid columns={2} spacing={3}>
-      <VStack pt="10px">
-        <Heading size="sm">Aanwezigen</Heading>
-        {aanwezigen.map(u => <Text key={u.$id}>{u.userName}</Text>)}
-      </VStack>
+    {users.length === 0 ? 
+      <Center width="100%">
+        <Box>
+          <Heading>
+            Helaas!
+          </Heading>
+          <Text>
+            😔 Jij bent niet gaaf genoeg voor deze functie 😔
+          </Text>
+        </Box>
+      </Center> :
+      <SimpleGrid columns={2} spacing={3}>
+        <VStack pt="10px">
+          <Heading size="sm">Aanwezigen</Heading>
+          {aanwezigen.map(u => <Text key={u.$id}>{u.userName}</Text>)}
+        </VStack>
 
-      <VStack pt="10px">
-        <Heading size="sm">Afwezigen</Heading>
-        {afwezigen.map(u => <Text key={u.$id}>{u.userName}</Text>)}
-      </VStack>
-    </SimpleGrid>
+        <VStack pt="10px">
+          <Heading size="sm">Afwezigen</Heading>
+          {afwezigen.map(u => <Text key={u.$id}>{u.userName}</Text>)}
+        </VStack>
+      </SimpleGrid>
+    }
   </Box>
 }
