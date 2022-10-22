@@ -25,13 +25,14 @@ import NewPurchase from './pages/inventory/NewPurchase'
 import Purchases from './pages/inventory/Purchases'
 import NewSale from './pages/inventory/NewSale'
 import Sales from './pages/inventory/Sales'
+import NewActivity from './pages/calendar/NewActivity'
 
 export default function App() {
   // state
   const [loading, setLoading] = useState<boolean>(true)
   const [profile, setProfile] = useState<Models.Account<Models.Preferences>>()
   const [roles, setRoles]     = useState<Roles[]>()
-  const [icon, setIcon]       = useState<URL>()
+  const [icon, setIcon]       = useState<string>()
 
   // nav
   const [_, setLocation] = useLocation()
@@ -47,10 +48,16 @@ export default function App() {
         const d = profile.prefs.defaultLocation
 
         setProfile(profile)
-        setIcon(window.storage.getFilePreview(
-          import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
-          profile.prefs.icon,
-        ))
+        let i
+        try {
+          i = window.storage.getFilePreview(
+            import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
+            profile.prefs.icon,
+          ).href
+        } catch (e) {
+          i = '/missing.jpg'
+        }
+        setIcon(i)
 
         if (d && d !== '/') setLocation(d)
       })
@@ -82,8 +89,11 @@ export default function App() {
         <SidebarWithHeader profile={profile!} icon={icon!} roles={roles!}>
           <Switch>
             {/* Kalender */}
+            <Route path="/kalender/nieuw">
+              <NewActivity />
+            </Route>
             <Route path="/kalender/:id"> 
-              {(params) => <Activity id={Number.parseInt(params.id)} />}
+              <Activity />
             </Route>
             <Route path="/kalender"> <Calendar /> </Route>
 
