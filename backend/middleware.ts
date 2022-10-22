@@ -1,8 +1,9 @@
 import { Context } from "https://deno.land/x/oak@v11.1.0/context.ts";
 import { helpers } from "https://deno.land/x/oak@v11.1.0/mod.ts";
-import { Roles } from "./roles.ts"
+import { hasAdminPowers, Roles } from "./roles.ts"
+import { users } from "./sdk.ts";
 
-export function requireAdmin(ctx: Context, next: any) {
+export async function requireAdmin(ctx: Context, next: any) {
   const query = helpers.getQuery(ctx)
 
   const apiKey = query['apiKey']
@@ -12,10 +13,16 @@ export function requireAdmin(ctx: Context, next: any) {
 
   if (!apiKey || !userId) {
     ctx.response.status = 400
-    ctx.response.body = `Missing query parameters! apiKey: ${apiKey} userId: ${userId}`
-    // return
+    ctx.response.body = {
+      message: 'Missing query parameters!',
+      requiredParameters: ['apiKey', 'userId'],
+      parameters: query
+    } 
+    
+    return
   }
-  
+
+  await hasAdminPowers(userId)
 
   ctx.response.status = 403
   ctx.response.body = 'You do not have access to this resource!'

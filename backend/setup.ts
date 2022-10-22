@@ -117,7 +117,6 @@ async function setupDatabase() {
     .catch(() => console.log('[DB] Winkel attribute already exists, skipping...'))
   await db.createDatetimeAttribute('main', 'inkopen', 'datum', true)
     .catch(() => console.log('[DB] Datum attribute already exists, skipping...'))
-    
 }
 
 // Setup all user roles

@@ -5,7 +5,7 @@ export enum Roles {
   Senaat = 'Senaat',
   Admin = 'Admin',
   Colosseum = 'Colosseum',
-  Penningmeester = 'Penningmeester',
+  KasCo = 'KasCo',
   Lid = 'Lid',
   Proeflid = 'Proeflid',
 }
@@ -22,3 +22,10 @@ function checkRole(userId: string, role: Roles): boolean {
   console.log('check role')
   return false
 } 
+
+
+export async function hasAdminPowers(userId: string): Promise<boolean> {
+  const s = await users.listSessions(userId)
+  console.log(s)
+  return true
+}
