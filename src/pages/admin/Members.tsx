@@ -1,4 +1,4 @@
-import { Box, Divider, Heading, Table, Tbody, Image, Td, Th, Thead, Tr, useColorModeValue, VStack, Link as LinkElem, Button } from '@chakra-ui/react'
+import { Box, Divider, Heading, Table, Tbody, Image, Td, Th, Thead, Tr, useColorModeValue, VStack, Link as LinkElem, Button, Tag, Badge, SimpleGrid } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { DataTable } from '../../components/DataTable'
 import { setTitle } from '../../utils/utils'
@@ -23,7 +23,9 @@ const columns = [
       <Box height="150px" width="150px">
         <Image 
           src={info.getValue()}
-          borderRadius="10px" 
+          borderRadius="10px"
+          height="150px"
+          width="150px"
           alt='Profielfoto' />
       </Box>
     ),
@@ -43,7 +45,11 @@ const columns = [
   }),
   columnHelper.accessor('roles', {
     cell: (info) => (
-      info.getValue().map((r, idx) => <LinkElem as={Link} href={'/admin/rollen/' + r.toLowerCase()} key={idx}>{r}<Divider orientation="vertical"/></LinkElem>)
+      <SimpleGrid columns={1} spacing={1}>
+        {info.getValue().map((r, idx) => <LinkElem as={Link} href={'/admin/rollen/' + r.toLowerCase()} key={idx}>
+          {r}
+        </LinkElem>)}
+      </SimpleGrid>
     ),
     header: 'Rollen',
   }),
