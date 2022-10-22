@@ -40,7 +40,7 @@ import { getRoles, Roles } from '../utils/user'
 
 interface SidebarWithHeaderProps {
   profile: Models.Account<Models.Preferences>
-  icon: URL
+  icon: string
   children: ReactNode
   roles: Roles[]
 }
@@ -87,19 +87,6 @@ interface SidebarProps extends BoxProps {
   roles: Roles[];
 }
 
-// const LinkItems: Array<LinkItemProps> = [
-//   { name: 'Home', link: '/', icon: FiHome },
-//   { name: 'Kalender', link: '/kalender', icon: AiOutlineSchedule },
-//   { name: 'Voorraad', link: '/voorraad', icon: MdOutlineInventory2 },
-//   { name: 'Instellingen', link: '/instellingen', icon: FiSettings },
-// ]
-
-// const adminLinkItems: Array<LinkItemProps> = [
-//   { name: 'Admin', link: '/admin', icon: GrUserAdmin },
-//   { name: 'Leden', link: '/admin/leden', icon: MdOutlinePeopleAlt },
-//   { name: 'Commissies', link: '/admin/rollen', icon: FaPeopleCarry },
-// ]
-
 const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
 
   const [notAdmin] = useState<boolean>(!(roles.includes(Roles.Admin) || roles.includes(Roles.Senaat)))
@@ -121,25 +108,25 @@ const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
         </Text>
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
-      <NavItem key={'Home'} icon={FiHome} link="/">
+      <NavItem key={'Home'} icon={FiHome} link="/" onClick={onClose}>
         Home
       </NavItem>
-      <NavItem key={'Kalender'} icon={AiOutlineSchedule} link="/kalender">
+      <NavItem key={'Kalender'} icon={AiOutlineSchedule} link="/kalender" onClick={onClose}>
         Kalender
       </NavItem>
-      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notAdmin}>
+      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notAdmin} onClick={onClose}>
         Voorraad
       </NavItem>
-      <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={notAdmin}>
+      <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={notAdmin} onClick={onClose}>
         Admin
       </NavItem>
-      <NavItem key={'Leden'} icon={MdOutlinePeopleAlt} link="/admin/leden" hidden={notAdmin}>
+      <NavItem key={'Leden'} icon={MdOutlinePeopleAlt} link="/admin/leden" hidden={notAdmin} onClick={onClose}>
         Leden
       </NavItem>
-      <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={notAdmin}>
+      <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={notAdmin} onClick={onClose}>
         Commissies
       </NavItem>
-      <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen">
+      <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen" onClick={onClose}>
         Instellingen
       </NavItem>
     </Box>
@@ -150,10 +137,11 @@ interface NavItemProps extends FlexProps {
   icon?: IconType;
   children: string | number;
   link: string;
+  onClick: () => void;
 }
-const NavItem = ({ icon, children, link, ...rest }: NavItemProps) => {
+const NavItem = ({ icon, children, link, onClick, ...rest }: NavItemProps) => {
   return (
-    <Link as={NavLink} to={link} style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
+    <Link as={NavLink} to={link} onClick={onClick} style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
       <Flex
         align="center"
         p="4"
@@ -185,7 +173,7 @@ const NavItem = ({ icon, children, link, ...rest }: NavItemProps) => {
 interface MobileProps extends FlexProps {
   onOpen: () => void;
   profile?: Models.Account<Models.Preferences>
-  icon?: URL
+  icon?: string
   roles: Roles[]
 }
 const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
@@ -260,7 +248,7 @@ const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
               <HStack>
                 <Avatar
                   size={'sm'}
-                  src={ icon?.href ?? config.account.fallbackUserIcon }
+                  src={ icon ?? config.account.fallbackUserIcon }
                 />
                 <VStack
                   display={{ base: 'none', md: 'flex' }}
