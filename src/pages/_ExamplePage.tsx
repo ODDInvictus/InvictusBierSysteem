@@ -19,9 +19,10 @@ export default function ExamplePage() {
 
   return <Box>
     <VStack spacing="20px">
-      <Heading as="h1" size="2xl">
-        Invictus Bier Systeem
+      <Heading as="h1" size="2xl" textAlign="center">
+        Voorbeeld pagina
       </Heading>
+
 
       <Divider borderColor={colors.divider} />
     </VStack>
