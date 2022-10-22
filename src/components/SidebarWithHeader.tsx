@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import {
   IconButton,
   Avatar,
@@ -30,16 +30,19 @@ import {
   FiSettings,
 } from 'react-icons/fi'
 import { AiOutlineSchedule } from 'react-icons/ai'
-import { MdOutlineInventory2 } from 'react-icons/md'
+import { FaPeopleCarry } from 'react-icons/fa' 
+import { MdOutlineInventory2, MdOutlinePeopleAlt, MdOutlineAdminPanelSettings } from 'react-icons/md'
 import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
 import { Models } from 'appwrite'
+import { getRoles, Roles } from '../utils/user'
 
 interface SidebarWithHeaderProps {
   profile: Models.Account<Models.Preferences>
-  icon: URL
+  icon: string
   children: ReactNode
+  roles: Roles[]
 }
 
 interface LinkItemProps {
@@ -47,19 +50,15 @@ interface LinkItemProps {
   icon: IconType;
   link: string;
 }
-const LinkItems: Array<LinkItemProps> = [
-  { name: 'Home', link: '/', icon: FiHome },
-  { name: 'Kalender', link: '/kalender', icon: AiOutlineSchedule },
-  { name: 'Voorraad', link: '/voorraad', icon: MdOutlineInventory2 },
-  { name: 'Instellingen', link: '/instellingen', icon: FiSettings },
-]
 
-export default function SidebarWithHeader({ profile, children, icon }: SidebarWithHeaderProps) {
+export default function SidebarWithHeader({ profile, children, icon, roles }: SidebarWithHeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
+
   return (
     <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
       <SidebarContent
         onClose={() => onClose}
+        roles={roles}
         display={{ base: 'none', md: 'block' }}
       />
       <Drawer
@@ -71,11 +70,11 @@ export default function SidebarWithHeader({ profile, children, icon }: SidebarWi
         onOverlayClick={onClose}
         size="full">
         <DrawerContent>
-          <SidebarContent onClose={onClose} />
+          <SidebarContent roles={roles} onClose={onClose} />
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} profile={profile} icon={icon} />
+      <MobileNav onOpen={onOpen} profile={profile} icon={icon} roles={roles}/>
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -85,9 +84,14 @@ export default function SidebarWithHeader({ profile, children, icon }: SidebarWi
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;
+  roles: Roles[];
 }
 
-const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
+
+  const [notAdmin] = useState<boolean>(!(roles.includes(Roles.Admin) || roles.includes(Roles.Senaat)))
+  const [notColosseum] = useState<boolean>(!roles.includes(Roles.Colosseum))
+
   return (
     <Box
       transition="3s ease"
@@ -104,11 +108,27 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </Text>
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
-      {LinkItems.map((link) => (
-        <NavItem key={link.name} icon={link.icon} link={link.link}>
-          {link.name}
-        </NavItem>
-      ))}
+      <NavItem key={'Home'} icon={FiHome} link="/" onClick={onClose}>
+        Home
+      </NavItem>
+      <NavItem key={'Kalender'} icon={AiOutlineSchedule} link="/kalender" onClick={onClose}>
+        Kalender
+      </NavItem>
+      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notAdmin} onClick={onClose}>
+        Voorraad
+      </NavItem>
+      <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={notAdmin} onClick={onClose}>
+        Admin
+      </NavItem>
+      <NavItem key={'Leden'} icon={MdOutlinePeopleAlt} link="/admin/leden" hidden={notAdmin} onClick={onClose}>
+        Leden
+      </NavItem>
+      <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={notAdmin} onClick={onClose}>
+        Commissies
+      </NavItem>
+      <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen" onClick={onClose}>
+        Instellingen
+      </NavItem>
     </Box>
   )
 }
@@ -117,10 +137,11 @@ interface NavItemProps extends FlexProps {
   icon?: IconType;
   children: string | number;
   link: string;
+  onClick: () => void;
 }
-const NavItem = ({ icon, children, link, ...rest }: NavItemProps) => {
+const NavItem = ({ icon, children, link, onClick, ...rest }: NavItemProps) => {
   return (
-    <Link as={NavLink} to={link} style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
+    <Link as={NavLink} to={link} onClick={onClick} style={{ textDecoration: 'none' }} _focus={{ boxShadow: 'none' }}>
       <Flex
         align="center"
         p="4"
@@ -152,16 +173,43 @@ const NavItem = ({ icon, children, link, ...rest }: NavItemProps) => {
 interface MobileProps extends FlexProps {
   onOpen: () => void;
   profile?: Models.Account<Models.Preferences>
-  icon?: URL
+  icon?: string
+  roles: Roles[]
 }
-const MobileNav = ({ onOpen, profile, icon, ...rest }: MobileProps) => {
+const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
+  const [bestRole, setBestRole] = useState<Roles>(Roles.Lid)
+
   const { toggleColorMode } = useColorMode()
-  const [_, setLocation] = useLocation()
+  const [_, setLocation]    = useLocation()
 
   const signOut = async () => {
     await window.account.deleteSessions()
     window.location.href = '/'
   }
+
+  useEffect(() => {
+    const r = roles
+
+    if (r.includes(Roles.Admin)) {
+      return setBestRole(Roles.Admin)
+    }
+
+    if (r.includes(Roles.Senaat)) {
+      return setBestRole(Roles.Senaat)
+    }
+
+    if (r.includes(Roles.Proeflid)) {
+      return setBestRole(Roles.Proeflid)
+    }
+
+    if (r.includes(Roles.Lid)) {
+      return setBestRole(Roles.Lid)
+    }
+
+    if (r.includes(Roles.Colosseum)) {
+      return setBestRole(Roles.Colosseum)
+    }
+  }, [])
 
   return (
     <Flex
@@ -200,7 +248,7 @@ const MobileNav = ({ onOpen, profile, icon, ...rest }: MobileProps) => {
               <HStack>
                 <Avatar
                   size={'sm'}
-                  src={ icon?.href ?? config.account.fallbackUserIcon }
+                  src={ icon ?? config.account.fallbackUserIcon }
                 />
                 <VStack
                   display={{ base: 'none', md: 'flex' }}
@@ -209,7 +257,7 @@ const MobileNav = ({ onOpen, profile, icon, ...rest }: MobileProps) => {
                   ml="2">
                   <Text fontSize="sm">{profile?.name ?? 'Username'}</Text>
                   <Text fontSize="xs" color="gray.600">
-                    {profile?.prefs.role ?? 'User'}
+                    {bestRole}
                   </Text>
                 </VStack>
                 <Box display={{ base: 'none', md: 'flex' }}>

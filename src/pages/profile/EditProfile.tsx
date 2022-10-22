@@ -27,7 +27,7 @@ export default function EditProfile(): JSX.Element {
   const [profile, setProfile] = useState<Models.Account<Models.Preferences>>()
   const [loading, setLoading] = useState<boolean>(true)
 
-  const [userIcon, setUserIcon] = useState<URL>()
+  const [userIcon, setUserIcon] = useState<string>()
 
   const [name, setName] = useState<string>('')
   const [email, setEmail] = useState<string>('')
@@ -45,10 +45,16 @@ export default function EditProfile(): JSX.Element {
     setTitle('Profile')
     window.account.get()
       .then(p => {
-        const url = window.storage.getFilePreview(
-          import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
-          p.prefs.icon,
-        )
+        let url
+        try {
+          url = window.storage.getFilePreview(
+            import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
+            p.prefs.icon,
+          ).href
+        } catch (e) {
+          url = '/missing.jpg'
+        }
+
         setUserIcon(url)
         return p
       })
@@ -154,7 +160,7 @@ export default function EditProfile(): JSX.Element {
           <FormLabel>User Icon</FormLabel>
           <Stack direction={['column', 'row']} spacing={6}>
             <Center>
-              <Avatar size="xl" src={userIcon?.toString() ?? 'https://bit.ly/sage-adebayo'}>
+              <Avatar size="xl" src={userIcon ?? '/missing.jpg'}>
                 <AvatarBadge
                   as={IconButton}
                   size="sm"

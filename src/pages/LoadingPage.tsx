@@ -11,6 +11,7 @@ export default function LoadingPage(props: LoadingPageProps) {
     minH={ props.h ?? '100vh'}
     align={'center'}
     justify={'center'}
+    overflow={'hidden'}
     bg={bgValue}>
     <Spinner size="xl" emptyColor='purple.400' color='purple.800' />
   </Stack>

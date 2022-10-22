@@ -9,6 +9,8 @@ export async function requireAdmin(ctx: Context, next: any) {
   const apiKey = query['apiKey']
   const userId = query['userId']
 
+  return
+
   if (!apiKey || !userId) {
     ctx.response.status = 400
     ctx.response.body = {
