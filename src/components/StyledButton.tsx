@@ -5,6 +5,7 @@ export function StyledButton(props: any) {
   return (
     <Button
       colorScheme="purple"
+      color="white"
       bgGradient={'linear(to-r, purple.600, purple.500)'}
       _hover={{
         bgGradient: 'linear(to-r, purple.600, purple.500, purple.400)',
