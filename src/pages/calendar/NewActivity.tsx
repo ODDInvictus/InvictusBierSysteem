@@ -1,4 +1,4 @@
-import { Box, Divider, FormControl, FormHelperText, FormLabel, Heading, Input, Select, SimpleGrid, Textarea, useColorModeValue, VStack } from '@chakra-ui/react'
+import { Box, Divider, FormControl, FormHelperText, FormLabel, Heading, Input, Select, SimpleGrid, Textarea, useColorModeValue, useToast, VStack } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'wouter'
 import { Card } from '../../components/Card'
@@ -17,6 +17,8 @@ export default function NewActivity() {
 
   const [roles, setRoles] = useState<string[]>([])
 
+  const toast = useToast()
+
   const [_, setHistory] = useLocation()
 
   const colors = {
@@ -30,12 +32,22 @@ export default function NewActivity() {
       .then(data => setRoles(Object.keys(data.roles.perRole)))
   }, [])
 
+  const newToast = (desc: string) => {
+    toast({
+      title: 'Oeps',
+      description: desc,
+      status: 'error',
+      duration: 2000,
+      isClosable: true,
+    })
+  }
+
   const save = async () => {
-    if (name === '') return alert('Naam is niet ingevuld!')
-    if (committee === '') return alert('Kies een commissie!')
-    if (description === '')  return alert('Schrijf eerst even een beschrijving!')
-    if (!date) return alert('Geef een datum op!')
-    if (location === '') return alert('Kies een locatie!')
+    if (name === '') return newToast('Vul een naam in')
+    if (committee === '') return newToast('Kies een commissie!')
+    if (description === '')  return newToast('Schrijf eerst even een beschrijving!')
+    if (!date) return newToast('Geef een datum op!')
+    if (location === '') return newToast('Kies een locatie!')
 
     const activity = {
       naam: name,
@@ -46,9 +58,26 @@ export default function NewActivity() {
       aanwezigen: [],
     }
 
-    const document = await window.db.createDocument('main', 'activiteiten', 'unique()', activity)
-
-    setHistory('/kalender/' + document.$id)
+    await window.db.createDocument('main', 'activiteiten', 'unique()', activity)
+      .then(d => {
+        toast({
+          title: 'Activiteit aangemaakt',
+          description: 'Je wordt herleid in 5 seconden!',
+          status: 'success',
+          duration: 5000,
+          isClosable: false,
+        })
+        setTimeout(() => setHistory('/kalender/' + d.$id), 5000)
+      })
+      .catch(err => {
+        toast({
+          title: 'Oeps!',
+          description: 'Iets ging fout of jij bent niet gaaf genoeg om dit te doen! Error: ' + err.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+      })
   }
 
   if (roles.length === 0) return <LoadingPage h="80vh" />
@@ -129,14 +158,6 @@ export default function NewActivity() {
           </FormControl>
         </Card>
       </SimpleGrid>
-
-
-
-
-
-
-
-
     </VStack>
 
   </Box> 
