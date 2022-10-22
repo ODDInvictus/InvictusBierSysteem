@@ -22,6 +22,7 @@ async function setupDatabase() {
     Permission.read(Role.team('proeflid')),
     Permission.create(Role.team('admin')),
     Permission.create(Role.team('senaat')),
+    Permission.create(Role.team('lid')),
     Permission.update(Role.team('admin')),
     Permission.update(Role.team('senaat')),
     Permission.update(Role.team('lid')),
