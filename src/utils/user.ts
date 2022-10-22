@@ -41,13 +41,11 @@ export async function getRoles(): Promise<Roles[]> {
   const cache = getRolesFromCache()
 
   if (!cache) {
-    const roles = await fetch(import.meta.env.VITE_BACKEND_ENDPOINT + 'users/roles')
-      .then(res => res.json())
-      .then(roles => roles as Roles[])
+    const teams = (await window.teams.list()).teams.map(t => t.name) as Roles[]
 
-    setRolesCache(roles)
+    setRolesCache(teams)
 
-    return roles
+    return teams
   }
 
   return cache 

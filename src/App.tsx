@@ -7,7 +7,7 @@ import About from './pages/About'
 import Auth from './pages/auth/Auth'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Index from './pages/Index'
-import Inventory from './pages/Inventory'
+import Inventory from './pages/inventory/Inventory'
 import LoadingPage from './pages/LoadingPage'
 import NotFound from './pages/NotFound'
 import EditProfile from './pages/profile/EditProfile'
@@ -15,8 +15,16 @@ import Settings from './pages/profile/Settings'
 import Calendar from './pages/calendar/Calendar'
 import Activity from './pages/calendar/Activity'
 import Members from './pages/admin/Members'
+import RolePage from './pages/admin/Roles'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { getRoles, Roles } from './utils/user'
+import AllRoles from './pages/admin/AllRoles'
+import AdminPage from './pages/admin/Admin'
+import Statistics from './pages/inventory/Statistics'
+import NewPurchase from './pages/inventory/NewPurchase'
+import Purchases from './pages/inventory/Purchases'
+import NewSale from './pages/inventory/NewSale'
+import Sales from './pages/inventory/Sales'
 
 export default function App() {
   // state
@@ -51,7 +59,8 @@ export default function App() {
         setRoles(r)
       })
       .then(load)
-      .catch(() => {
+      .catch(e => {
+        console.error(e)
         console.log('not logged in')
         setLocation('/auth')
         load()
@@ -79,14 +88,49 @@ export default function App() {
             <Route path="/kalender"> <Calendar /> </Route>
 
             <Route path="/instellingen"> <Settings /> </Route>
-            <Route path="/voorraad"> <Inventory /> </Route>
+            
+            {/* Colosseum */}
+            <Route path="/voorraad/statistieken"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Statistics />} />
+            </Route>
+            
+            <Route path="/voorraad/inkopen/nieuw"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<NewPurchase />} />
+            </Route>
+
+            <Route path="/voorraad/inkopen"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Purchases />} />
+            </Route>
+
+            <Route path="/voorraad/streeplijsten/nieuw"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<NewSale />} />
+            </Route>
+
+            <Route path="/voorraad/streeplijsten"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Sales />} />
+            </Route>
+
+            <Route path="/voorraad"> 
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Inventory />} />
+            </Route>
+
+            
 
             {/* Admin routes */}
             <Route path="/admin/leden"> 
               <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<Members/>} />
             </Route>
+
+            <Route path="/admin/rollen/:role">
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<RolePage />} />
+            </Route>
+
+            <Route path="/admin/rollen">
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<AllRoles />} />
+            </Route>
+
             <Route path="/admin"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<NotFound/>} />
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<AdminPage/>} />
             </Route>
 
             {/* User profile */}

@@ -30,7 +30,8 @@ import {
   FiSettings,
 } from 'react-icons/fi'
 import { AiOutlineSchedule } from 'react-icons/ai'
-import { MdOutlineInventory2 } from 'react-icons/md'
+import { FaPeopleCarry } from 'react-icons/fa' 
+import { MdOutlineInventory2, MdOutlinePeopleAlt, MdOutlineAdminPanelSettings } from 'react-icons/md'
 import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
@@ -49,19 +50,15 @@ interface LinkItemProps {
   icon: IconType;
   link: string;
 }
-const LinkItems: Array<LinkItemProps> = [
-  { name: 'Home', link: '/', icon: FiHome },
-  { name: 'Kalender', link: '/kalender', icon: AiOutlineSchedule },
-  { name: 'Voorraad', link: '/voorraad', icon: MdOutlineInventory2 },
-  { name: 'Instellingen', link: '/instellingen', icon: FiSettings },
-]
 
 export default function SidebarWithHeader({ profile, children, icon, roles }: SidebarWithHeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
+
   return (
     <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
       <SidebarContent
         onClose={() => onClose}
+        roles={roles}
         display={{ base: 'none', md: 'block' }}
       />
       <Drawer
@@ -73,7 +70,7 @@ export default function SidebarWithHeader({ profile, children, icon, roles }: Si
         onOverlayClick={onClose}
         size="full">
         <DrawerContent>
-          <SidebarContent onClose={onClose} />
+          <SidebarContent roles={roles} onClose={onClose} />
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
@@ -87,9 +84,27 @@ export default function SidebarWithHeader({ profile, children, icon, roles }: Si
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;
+  roles: Roles[];
 }
 
-const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+// const LinkItems: Array<LinkItemProps> = [
+//   { name: 'Home', link: '/', icon: FiHome },
+//   { name: 'Kalender', link: '/kalender', icon: AiOutlineSchedule },
+//   { name: 'Voorraad', link: '/voorraad', icon: MdOutlineInventory2 },
+//   { name: 'Instellingen', link: '/instellingen', icon: FiSettings },
+// ]
+
+// const adminLinkItems: Array<LinkItemProps> = [
+//   { name: 'Admin', link: '/admin', icon: GrUserAdmin },
+//   { name: 'Leden', link: '/admin/leden', icon: MdOutlinePeopleAlt },
+//   { name: 'Commissies', link: '/admin/rollen', icon: FaPeopleCarry },
+// ]
+
+const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
+
+  const [notAdmin] = useState<boolean>(!(roles.includes(Roles.Admin) || roles.includes(Roles.Senaat)))
+  const [notColosseum] = useState<boolean>(!roles.includes(Roles.Colosseum))
+
   return (
     <Box
       transition="3s ease"
@@ -106,11 +121,27 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </Text>
         <CloseButton display={{ base: 'flex', md: 'none' }} onClick={onClose} />
       </Flex>
-      {LinkItems.map((link) => (
-        <NavItem key={link.name} icon={link.icon} link={link.link}>
-          {link.name}
-        </NavItem>
-      ))}
+      <NavItem key={'Home'} icon={FiHome} link="/">
+        Home
+      </NavItem>
+      <NavItem key={'Kalender'} icon={AiOutlineSchedule} link="/kalender">
+        Kalender
+      </NavItem>
+      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notAdmin}>
+        Voorraad
+      </NavItem>
+      <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={notAdmin}>
+        Admin
+      </NavItem>
+      <NavItem key={'Leden'} icon={MdOutlinePeopleAlt} link="/admin/leden" hidden={notAdmin}>
+        Leden
+      </NavItem>
+      <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={notAdmin}>
+        Commissies
+      </NavItem>
+      <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen">
+        Instellingen
+      </NavItem>
     </Box>
   )
 }

@@ -1,20 +1,38 @@
-import { Box, Divider, Heading, HStack, useColorModeValue, VStack, Text, Container, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, Center, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, Button } from '@chakra-ui/react'
-import { useEffect } from 'react'
-import { useLocation } from 'wouter'
+import { Box, Divider, Heading, Link as LinkElem, useColorModeValue, VStack, Text, Container, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, Center, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, Button, HStack } from '@chakra-ui/react'
+import { Query } from 'appwrite'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from 'wouter'
+import { StyledButton } from '../../components/StyledButton'
 import { setTitle } from '../../utils/utils'
 
+// export type Activity = {
+
+// }
 
 export default function Calendar() {
-  
+
+  const [activities, setActivities] = useState<any[]>([])
+
   const [_, setLocation] = useLocation()
-
-
+  
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700'),
   }
   useEffect(() => {
-    setTitle('Kalender')  
-  })
+    setTitle('Kalender')
+    
+    window.db.listDocuments('main', 'activiteiten', [
+      Query.greaterThan('datum', new Date().toISOString())
+    ]).then(a => setActivities(a.documents))
+  }, [])
+
+  const formatDate = (d: Date) => {
+    return `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`
+  }
+
+  const formatTime = (d: Date) => {
+    return `${d.getHours()}:${(d.getMinutes()<10?'0':'') + d.getMinutes() }`
+  }
 
   return <Box>
     <VStack spacing="20px">
@@ -41,27 +59,20 @@ export default function Calendar() {
               </Tr>
             </Thead>
             <Tbody>
-              <Tr cursor="pointer" onClick={() => setLocation('/kalender/0')}>
-                <Td>Symposium Invictus</Td>
-                <Td>Senaat</Td>
-                <Td>Het Colosseum</Td>
-                <Td>29-09-2022</Td>
-                <Td>22:00</Td>
-              </Tr>
-              <Tr>
-                <Td>Wijncantus</Td>
-                <Td>Senaat, Bierco</Td>
-                <Td>Het Colosseum</Td>
-                <Td>06-10-2022</Td>
-                <Td>20:00</Td>
-              </Tr>
-              <Tr>
-                <Td>Chaosborrel</Td>
-                <Td>Bierco</Td>
-                <Td>Het Colosseum</Td>
-                <Td>13-10-2022</Td>
-                <Td>21:00</Td>
-              </Tr>
+              {/* @ts-expect-error Je kan gewoon Date - Date doen niet zo piepen */}
+              {activities.sort((a, b) => (new Date(a.datum)) - (new Date(b.datum))).map(a => (
+                <Tr key={a.$id}>
+                  <Td>
+                    <LinkElem as={Link} href={'/kalender/' + a.$id}>
+                      {a.naam}
+                    </LinkElem>
+                  </Td>
+                  <Td>{a.organisatie}</Td>
+                  <Td>{a.locatie}</Td>
+                  <Td>{formatDate(new Date(a.datum))}</Td>
+                  <Td>{formatTime(new Date(a.datum))}</Td>
+                </Tr>
+              ))}
             </Tbody>
             <Tfoot>
               <Tr>
@@ -73,6 +84,12 @@ export default function Calendar() {
             </Tfoot>
           </Table>
         </TableContainer>
+
+        <HStack pt="30px">
+          <StyledButton onClick={() => setLocation('/kalender/nieuw')}>
+            Activiteit toevogen
+          </StyledButton>
+        </HStack>
 
       </VStack>
     </VStack>
