@@ -101,7 +101,7 @@ export default function App() {
             
             {/* Colosseum */}
             <Route path="/voorraad/statistieken"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Statistics />} />
+              <ProtectedRoute allowedRoles={[Roles.Colosseum, Roles.Lid]} currentRoles={roles!} element={<Statistics />} />
             </Route>
             
             <Route path="/voorraad/inkopen/nieuw"> 
@@ -109,7 +109,7 @@ export default function App() {
             </Route>
 
             <Route path="/voorraad/inkopen"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Purchases />} />
+              <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Purchases />} />
             </Route>
 
             <Route path="/voorraad/streeplijsten/nieuw"> 
@@ -117,11 +117,11 @@ export default function App() {
             </Route>
 
             <Route path="/voorraad/streeplijsten"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Sales />} />
+              <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Sales />} />
             </Route>
 
             <Route path="/voorraad"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<Inventory />} />
+              <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Inventory />} />
             </Route>
 
             
