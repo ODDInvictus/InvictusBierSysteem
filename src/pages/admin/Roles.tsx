@@ -2,7 +2,7 @@ import { Box, Button, Divider, Heading, useColorModeValue, VStack, Text, Th, The
 import { useEffect, useState } from 'react'
 import { useLocation, useRoute } from 'wouter'
 import { useLoading } from '../../hooks/useLoading'
-import { setTitle } from '../../utils/utils'
+import { fetchBackend, setTitle } from '../../utils/utils'
 import LoadingPage from '../LoadingPage'
 import NotFound from '../NotFound'
 import { RiArrowGoBackFill } from 'react-icons/ri'
@@ -34,18 +34,14 @@ export default function ExamplePage() {
 
   const deleteFromRole = (userId: string) => {
     if (confirm('Weet je zeker dat je deze gebruiker uit deze rol wil gooien?')) {
-      fetch(import.meta.env.VITE_BACKEND_ENDPOINT + 'users/roles', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userId,
-          roleId: route!.role
+      fetchBackend('users/roles', true, 'DELETE', { userId, role: route!.role })
+        .then(res => {
+          if (res.message) {
+            setError(res.message)
+            return
+          }
         })
-      }).then(() => {
-        setUsers(users.filter((u: any) => u.$id !== userId))
-      })
+        .then(() => setUsers(users.filter((u: any) => u.userId !== userId)))
     }
   }
 

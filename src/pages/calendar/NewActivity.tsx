@@ -4,7 +4,7 @@ import { useLocation } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
 import { Activiteit } from '../../types/backend'
-import { setTitle } from '../../utils/utils'
+import { fetchBackend, setTitle } from '../../utils/utils'
 import LoadingPage from '../LoadingPage'
 
 export default function NewActivity() {
@@ -27,8 +27,7 @@ export default function NewActivity() {
   useEffect(() => {
     setTitle('Nieuwe activiteit')
 
-    fetch(import.meta.env.VITE_BACKEND_ENDPOINT + 'users')
-      .then(res => res.json())
+    fetchBackend('users', true)
       .then(data => setRoles(Object.keys(data.roles.perRole)))
   }, [])
 

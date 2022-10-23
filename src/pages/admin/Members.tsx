@@ -1,11 +1,13 @@
 import { Box, Divider, Heading, Table, Tbody, Image, Td, Th, Thead, Tr, useColorModeValue, VStack, Link as LinkElem, Button, Tag, Badge, SimpleGrid } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { DataTable } from '../../components/DataTable'
-import { setTitle } from '../../utils/utils'
+import { fetchBackend, setTitle } from '../../utils/utils'
 import { createColumnHelper, flexRender, getCoreRowModel } from '@tanstack/react-table'
 import { useReactTable } from '@tanstack/react-table'
 import { Link } from 'wouter'
 import { EditIcon } from '@chakra-ui/icons'
+import ErrorPage from '../ErrorPage'
+
 
 type Member = {
   name: string,
@@ -66,7 +68,9 @@ function formatDate(d: Date): string {
 
 export default function Members() {
 
+  const [res, setRes] = useState<any>()
   const [data, setData] = useState<Member[]>([])
+  const [error, setError] = useState<string>()
 
   const table = useReactTable({
     data,
@@ -80,35 +84,45 @@ export default function Members() {
   useEffect(() => {
     setTitle('Leden')
 
-    fetch(import.meta.env.VITE_BACKEND_ENDPOINT + 'users', {
-      method: 'GET'
-    }).then(res => res.json())
-      .then(data => {
-        const d = []
-        for (const user of data.users) {
-          const roles = data.roles.perUser[user.$id]
-          let icon = ''
-          try {
-            icon = window.storage.getFilePreview(
-              import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
-              user.prefs.icon,
-            ).href
-          } catch (e) {
-            icon = '/public/missing.jpg'
-          }
-
-          d.push({
-            profilePicture: icon,
-            name: user.name,
-            email: user.email,
-            id: user.$id,
-            birthday: new Date(),
-            roles
-          })
+    fetchBackend('users', true)
+      .then(res => {
+        if (res.message) {
+          setError(res.message)
+          return
         }
-        setData(d)
-      })
+        setRes(res)
+      })    
   }, [])
+
+  useEffect(() => {
+    if (!res) return
+
+    const d = []
+    for (const user of res.users) {
+      const roles = res.roles.perUser[user.$id]
+      let icon = ''
+      try {
+        icon = window.storage.getFilePreview(
+          import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
+          user.prefs.icon,
+        ).href
+      } catch (e) {
+        icon = '/missing.jpg'
+      }
+
+      d.push({
+        profilePicture: icon,
+        name: user.name,
+        email: user.email,
+        id: user.$id,
+        birthday: new Date(),
+        roles
+      })
+    }
+    setData(d)
+  }, [res])
+
+  if (error) return <ErrorPage error={error} />
 
   return <Box>
     <VStack spacing="20px">
