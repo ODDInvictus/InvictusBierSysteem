@@ -27,8 +27,8 @@ export default function NewActivity() {
   useEffect(() => {
     setTitle('Nieuwe activiteit')
 
-    fetchBackend('users', true)
-      .then(data => setRoles(Object.keys(data.roles.perRole)))
+    fetchBackend('roles', true)
+      .then(setRoles)
   }, [])
 
   const newToast = (desc: string) => {

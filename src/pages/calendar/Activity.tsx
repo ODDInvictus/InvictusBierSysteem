@@ -1,4 +1,4 @@
-import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, HStack, Center, useToast } from '@chakra-ui/react'
+import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, Modal, HStack, Center, useToast, useDisclosure, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter, FormControl, FormLabel, Input, Textarea, Select } from '@chakra-ui/react'
 import { Models } from 'appwrite'
 import { useEffect, useRef, useState } from 'react'
 import ICalLink from 'react-icalendar-link'
@@ -6,7 +6,7 @@ import { useLocation, useRoute } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
 import { Activiteit } from '../../types/backend'
-import { setTitle } from '../../utils/utils'
+import { fetchBackend, setTitle } from '../../utils/utils'
 import ErrorPage from '../ErrorPage'
 import LoadingPage from '../LoadingPage'
 
@@ -16,6 +16,7 @@ export default function Activity() {
   const [users, setUsers]           = useState<Models.Membership[]>()
   const [user, setUser]             = useState<Models.Account<Models.Preferences>>()
   const [event, setEvent]           = useState<any>({})
+  const [commissies, setCommissies]           = useState<string[]>()
   
   const [error, setError]           = useState<string>()
 
@@ -24,7 +25,7 @@ export default function Activity() {
 
   const toast = useToast()
 
-
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700'),
@@ -51,6 +52,15 @@ export default function Activity() {
       }).then(() => {
         window.account.get()
           .then(setUser)
+      }).then(() => {
+        fetchBackend('roles', true)
+          .then(d => {
+            if (d.message) {
+              setError(d.message)
+              return
+            }
+            setCommissies(d)
+          })
       }).catch(err => {
         setError(err.message)
       })
@@ -114,9 +124,10 @@ export default function Activity() {
 
   if (error) return <ErrorPage error={error} />
 
-  if (!activiteit || !users || !user) return <LoadingPage h="80vh" />
+  if (!activiteit || !users || !user || !commissies) return <LoadingPage h="80vh" />
 
   return <Box>
+    <EditActivity activiteit={activiteit} isOpen={isOpen} onClose={onClose} onOpen={onOpen} commissies={commissies}/>
     <VStack spacing="20px">
       <Heading as="h1" size="2xl" textAlign="center">
         {activiteit.naam}
@@ -181,7 +192,7 @@ export default function Activity() {
             <StyledButton>
               Maak declaratie
             </StyledButton>
-            <StyledButton>
+            <StyledButton onClick={onOpen}>
               Wijzig Activiteit
             </StyledButton>
             <Button
@@ -242,4 +253,132 @@ function Aanwezigen({ activiteit, users }: AanwezigenProps) {
       </SimpleGrid>
     }
   </Box>
+}
+
+type EditActivityProps = {
+  activiteit: Activiteit
+  commissies: string[]
+  isOpen: boolean
+  onClose: () => void
+  onOpen: () => void
+}
+
+function EditActivity (props: EditActivityProps) {
+
+  const [ naam, setNaam ] = useState<string>(props.activiteit.naam)
+  const [ omschrijving, setOmschrijving ] = useState<string>(props.activiteit.omschrijving)
+  const [ organisatie, setOrganisatie ] = useState<string>(props.activiteit.organisatie)
+  const [ locatie, setLocatie ] = useState<string>(props.activiteit.locatie)
+  const [ datum, setDatum ] = useState<Date>(new Date(props.activiteit.datum))
+
+  const toast = useToast()
+
+  const save = () => {
+    if (naam === '' || omschrijving === '' || organisatie === '' || locatie === '' || !datum) {
+      toast({
+        title: 'Oeps!',
+        description: 'Je bent iets vergeten in te vullen',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+
+    const activiteit = {
+      naam,
+      omschrijving,
+      organisatie,
+      locatie,
+      datum: datum.toISOString(),
+    }
+
+    window.db.updateDocument('main', 'activiteiten', props.activiteit.$id, activiteit)
+      .then(() => {
+        toast({
+          title: 'Gelukt!',
+          description: 'Activiteit is aangepast, ik herlaad automatisch de pagina',
+          status: 'success',
+          duration: 2000,
+          isClosable: true,
+        })
+        setTimeout(() => location.reload(), 2000)
+      }).catch(err => {
+        toast({
+          title: 'Oeps!',
+          description: 'Er is iets mis gegaan',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
+  }
+
+  return <>
+    <Modal isOpen={props.isOpen} onClose={props.onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        
+        <ModalHeader>
+          Wijzig activiteit
+        </ModalHeader>
+
+        <ModalCloseButton />
+        
+        <ModalBody>
+          <FormControl>
+            <FormLabel>Naam</FormLabel>
+            <Input 
+              value={naam}
+              onChange={(e) => setNaam(e.target.value)}
+              placeholder="Naam"/>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>Omschrijving</FormLabel>
+            <Textarea
+              value={omschrijving}
+              onChange={(e) => setOmschrijving(e.target.value)}
+              placeholder="Omschrijving"/>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>Organisatie</FormLabel>
+            <Select
+              value={organisatie}
+              onChange={(e) => setOrganisatie(e.target.value)}>
+              {props.commissies.map(c => <option key={c} value={c}>{c}</option>)}
+            </Select>
+          </FormControl>
+          
+          <FormControl>
+            <FormLabel>Locatie</FormLabel>
+            <Input
+              value={locatie}
+              onChange={(e) => setLocatie(e.target.value)}
+              placeholder="Locatie"/>
+          </FormControl>
+
+          <FormControl>
+            <FormLabel>Datum</FormLabel>
+            <Input
+              type="datetime-local"
+              onChange={(e) => setDatum(new Date(e.target.value))}
+              placeholder="Datum"/>
+          </FormControl>
+
+        </ModalBody>
+        
+        <ModalFooter>
+          <StyledButton mr={3} onClick={save}>
+            Opslaan
+          </StyledButton>
+          <Button variant='ghost' onClick={props.onClose}>
+            Niet opslaan
+          </Button>
+        </ModalFooter>
+        
+      </ModalContent>
+    </Modal>
+  </>
 }

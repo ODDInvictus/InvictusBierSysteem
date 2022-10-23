@@ -41,6 +41,14 @@ router.delete('/users/roles', requireAdmin, async ctx => {
   const { userId } = body
 })
 
+router.get('/roles', async ctx => {
+  const roles = await teams.list()
+
+  const list = roles.teams.map(role => role.name)
+
+  ctx.response.body = list 
+})
+
 
 router.get('/users', requireAdmin, async ctx => {
   const u = await users.list()
