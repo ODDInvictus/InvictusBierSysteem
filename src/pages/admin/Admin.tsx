@@ -1,7 +1,7 @@
 import { Box, Divider, Heading, Text, Link as ChakraLink, SimpleGrid, useColorModeValue, VStack } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { Link } from 'wouter'
-import { setTitle } from '../../utils/utils'
+import { fetchBackend, setTitle } from '../../utils/utils'
 import LoadingPage from '../LoadingPage'
 import ErrorPage from '../ErrorPage'
 
@@ -26,15 +26,16 @@ export default function AdminPage() {
   useEffect(() => {
     setTitle('Admin')
 
-    fetch(import.meta.env.VITE_BACKEND_ENDPOINT + 'users')
-      .then(res => res.json())
+    fetchBackend('users', true)
       .then(data => {
+        if (data.message) {
+          setError(data.message)
+          return
+        }
+        setData(data)
         setRoles(Object.keys(data.roles.perRole))
-        return data
-      })
-      .then(setData)
-      .then(load)
-      .catch(err => {
+        load()
+      }).catch(err => {
         setError(err.message)
       })
   }, [])
