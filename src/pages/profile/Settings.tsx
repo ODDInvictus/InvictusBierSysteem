@@ -5,6 +5,7 @@ import { getConfig, setTitle } from '../../utils/utils'
 import LoadingPage from '../LoadingPage'
 
 const pages = {
+  'Disable': 'disable',
   'Home': '/',
   'Kalender': '/kalender',
   'Inventory': '/voorraad',

@@ -59,7 +59,7 @@ export default function App() {
         }
         setIcon(i)
 
-        if (d && d !== '/') setLocation(d)
+        if (d && d !== '/' && d !== 'disable') setLocation(d)
       })
       .then(async () => {
         const r = await getRoles()
