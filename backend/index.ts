@@ -2,6 +2,7 @@ import { db } from './sdk.ts'
 import { Application } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 import { router } from "./routes.ts";
+import { initMail } from './email.ts';
 
 const app = new Application()
 
@@ -16,6 +17,7 @@ app.addEventListener(
 )
 
 async function main() {
+  initMail()
   await app.listen({ port: 8080 })
 
   const d = await db.getDocument('main', 'activities', '63493c2659b986f7e109')

@@ -23,3 +23,12 @@ Daarna:
 ## Environment Variables
 
 Beide de frontend en backend hebben een bestandje genaamd .env.example die je kan kopieren en .env noemen.
+
+
+## Appwrite opzetten
+
+Niet alles kan gedaan worden met de API :( Daarom moet je nog een paar extra dingen doen om dat te fixen
+1. Zet max gebruikers op 1
+2. Maak een gebruiker aan via de backend en zet die in het team 'Admin' en 'Lid'
+3. Stel een wachtwoord in
+4. Indexen instellen (TODO)

@@ -1,5 +1,6 @@
 import { Client } from "https://deno.land/x/appwrite@6.1.0/mod.ts";
 import { Application, helpers, Router } from "https://deno.land/x/oak@v11.1.0/mod.ts";
+import { sendMail } from "./email.ts";
 import { requireAdmin } from "./middleware.ts";
 import { teams, users } from "./sdk.ts";
 
@@ -87,4 +88,13 @@ router.get('/users', requireAdmin, async ctx => {
   }
 
   ctx.response.body = res
+})
+
+/*
+   EMAIL ROUTES
+*/
+
+router.post('/email', async ctx => {
+  await sendMail()
+  ctx.response.body = 'Email sent'
 })

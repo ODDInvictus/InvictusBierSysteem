@@ -9,6 +9,8 @@ async function setupAppwrite() {
   await setupStorage()
 
   await setupDatabase()
+
+  await setupEmail()
 }
 
 async function setupDatabase() {
@@ -143,4 +145,89 @@ async function setupStorage() {
     Permission.create(Role.team('proeflid')),
   ], true, true, 30000000, ['jpg', 'jpeg', 'png', 'gif'], 'gzip', false, true)
     .catch(() => console.log('[Storage] User icon bucket already exists, skipping...'))
+}
+
+async function setupEmail() {
+  // Create the email db
+  await db.create('email', 'Email')
+    .catch(() => console.log('[Email] Email collection already exists, skipping...'))
+
+  // Create the email tables
+  await db.createCollection('email', 'queue', 'Queue', [
+    Permission.read(Role.team('admin')),
+    Permission.read(Role.team('senaat')),
+    Permission.create(Role.team('admin')),
+    Permission.create(Role.team('senaat')),
+    Permission.create(Role.team('lid')),
+    Permission.delete(Role.team('admin')),
+    Permission.delete(Role.team('senaat')),
+  ]).catch(() => console.log('[Email] Queue collection already exists, skipping...'))
+
+  await db.createStringAttribute('email', 'queue', 'to', 512, true)
+    .catch(() => console.log('[Email] To attribute already exists, skipping...'))
+  await db.createStringAttribute('email', 'queue', 'subject', 512, true)
+    .catch(() => console.log('[Email] Subject attribute already exists, skipping...'))
+  await db.createStringAttribute('email', 'queue', 'body', 512, true)
+    .catch(() => console.log('[Email] Body attribute already exists, skipping...'))
+  await db.createStringAttribute('email', 'queue', 'template', 512, true)
+    .catch(() => console.log('[Email] Template attribute already exists, skipping...'))
+
+
+  await db.createCollection('email', 'templates', 'Templates', [
+    Permission.read(Role.team('admin')),
+    Permission.read(Role.team('senaat')),
+    Permission.create(Role.team('admin')),
+    Permission.delete(Role.team('admin')),
+  ]).catch(() => console.log('[Email] Templates collection already exists, skipping...'))
+
+  await db.createStringAttribute('email', 'templates', 'name', 512, true)
+    .catch(() => console.log('[Email] Name attribute already exists, skipping...'))
+
+  await db.createDocument('email', 'templates', 'reguliere_email', {
+    name: 'Reguliere Email',
+  }).catch(() => console.log('[Email] Reguliere Email template already exists, skipping...'))
+  await db.createDocument('email', 'templates', 'forward', {
+    name: 'Forward',
+  }).catch(() => console.log('[Email] Forward template already exists, skipping...'))
+  await db.createDocument('email', 'templates', 'nieuwsbrief', {
+    name: 'Nieuwsbrief',
+  }).catch(() => console.log('[Email] Nieuwsbrief template already exists, skipping...'))
+  await db.createDocument('email', 'templates', 'uitnodiging', {
+    name: 'Uitnodiging',
+  }).catch(() => console.log('[Email] Uitnodiging template already exists, skipping...'))
+  await db.createDocument('email', 'templates', 'verjaardag', {
+    name: 'Verjaardag',
+  }).catch(() => console.log('[Email] Verjaardag template already exists, skipping...'))
+
+  await db.createCollection('email', 'sent', 'Sent', [
+    Permission.read(Role.team('admin')),
+    Permission.read(Role.team('senaat')),
+    Permission.create(Role.team('admin')),
+    Permission.create(Role.team('senaat')),
+    Permission.delete(Role.team('admin')),
+    Permission.delete(Role.team('senaat')),
+  ]).catch(() => console.log('[Email] Sent collection already exists, skipping...'))
+
+  await db.createCollection('email', 'settings', 'Settings', [
+    Permission.read(Role.team('admin')),
+  ]).catch(() => console.log('[Email] Settings collection already exists, skipping...'))
+
+  await db.createStringAttribute('email', 'settings', 'SMTP_SERVER', 512, true)
+    .catch(() => console.log('[Email] SMTP_SERVER attribute already exists, skipping...'))
+  await db.createStringAttribute('email', 'settings', 'SMTP_PORT', 512, true)
+    .catch(() => console.log('[Email] SMTP_PORT attribute already exists, skipping...'))
+  await db.createStringAttribute('email', 'settings', 'SMTP_USERNAME', 512, true)
+    .catch(() => console.log('[Email] SMTP_USERNAME attribute already exists, skipping...'))
+  await db.createStringAttribute('email', 'settings', 'SMTP_KEY', 512, true)
+    .catch(() => console.log('[Email] SMTP_KEY attribute already exists, skipping...'))
+  await db.createIntegerAttribute('email', 'settings', 'MAX_EMAILS_PER_HOUR', true)
+    .catch(() => console.log('[Email] MAX_EMAILS_PER_HOUR attribute already exists, skipping...'))
+  await db.createIntegerAttribute('email', 'settings', 'MAX_EMAILS_PER_DAY', true)
+    .catch(() => console.log('[Email] MAX_EMAILS_PER_DAY attribute already exists, skipping...'))
+  await db.createIntegerAttribute('email', 'settings', 'ALREADY_SEND_THIS_HOUR', true)
+    .catch(() => console.log('[Email] MAX_EMAILS_PER_HOUR attribute already exists, skipping...'))
+  await db.createIntegerAttribute('email', 'settings', 'ALREADY_SEND_THIS_DAY', true)
+    .catch(() => console.log('[Email] MAX_EMAILS_PER_DAY attribute already exists, skipping...'))  
+  await db.createStringAttribute('email', 'settings', 'FROM_EMAIL', 512, true)
+    .catch(() => console.log('[Email] FROM_EMAIL attribute already exists, skipping...'))
 }
