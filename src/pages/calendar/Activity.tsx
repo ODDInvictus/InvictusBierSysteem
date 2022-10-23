@@ -1,12 +1,13 @@
-import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, HStack, Center } from '@chakra-ui/react'
+import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, HStack, Center, useToast } from '@chakra-ui/react'
 import { Models } from 'appwrite'
 import { useEffect, useRef, useState } from 'react'
 import ICalLink from 'react-icalendar-link'
-import { useRoute } from 'wouter'
+import { useLocation, useRoute } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
 import { Activiteit } from '../../types/backend'
 import { setTitle } from '../../utils/utils'
+import ErrorPage from '../ErrorPage'
 import LoadingPage from '../LoadingPage'
 
 export default function Activity() {
@@ -15,8 +16,15 @@ export default function Activity() {
   const [users, setUsers]           = useState<Models.Membership[]>()
   const [user, setUser]             = useState<Models.Account<Models.Preferences>>()
   const [event, setEvent]           = useState<any>({})
+  
+  const [error, setError]           = useState<string>()
 
   const route = useRoute('/kalender/:id')[1]
+  const [_, setLocation] = useLocation()
+
+  const toast = useToast()
+
+
 
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700'),
@@ -43,6 +51,8 @@ export default function Activity() {
       }).then(() => {
         window.account.get()
           .then(setUser)
+      }).catch(err => {
+        setError(err.message)
       })
   }, [])
 
@@ -75,6 +85,34 @@ export default function Activity() {
 
     setActiviteit(a as unknown as Activiteit)
   }
+
+  const deleteActivity = () => {
+    if (!activiteit) return
+
+    if (!confirm(`Weet je zeker dat je activiteit: '${activiteit.naam}' wil verwijderen`)) return
+
+    window.db.deleteDocument('main', 'activiteiten', activiteit.$id)
+      .then(() => {
+        toast({
+          title: 'Activiteit verwijderd',
+          description: 'Je wordt herleid in 3 seconden',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        })
+        setTimeout(() => setLocation('/kalender'), 3000)
+      }).catch(e => {
+        toast({
+          title: 'Activiteit niet verwijderd',
+          description: e.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
+  }
+
+  if (error) return <ErrorPage error={error} />
 
   if (!activiteit || !users || !user) return <LoadingPage h="80vh" />
 
@@ -146,6 +184,16 @@ export default function Activity() {
             <StyledButton>
               Wijzig Activiteit
             </StyledButton>
+            <Button
+              color="white"
+              colorScheme="red"
+              bgGradient="linear(to-r, red.500,red.600)"
+              onClick={deleteActivity}
+              _hover={{
+                bgGradient: 'linear(to-r, red.600,red.500)',
+              }}>
+              Verwijder Activiteit
+            </Button>
           </SimpleGrid>
         </Card>
       </SimpleGrid>
