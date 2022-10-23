@@ -42,7 +42,7 @@ router.delete('/users/roles', requireAdmin, async ctx => {
 })
 
 
-router.get('/users', async ctx => {
+router.get('/users', requireAdmin, async ctx => {
   const u = await users.list()
   const t = await teams.list()
 

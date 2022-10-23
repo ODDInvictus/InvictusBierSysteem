@@ -1,5 +1,6 @@
 import * as sdk from 'https://deno.land/x/appwrite@6.1.0/mod.ts'
 import { config } from 'https://deno.land/x/dotenv/mod.ts'
+import { Context } from 'https://deno.land/x/oak@v11.1.0/context.ts'
 
 export const client = new sdk.Client()
 
@@ -18,6 +19,8 @@ client
   .setEndpoint(endpoint)
   .setProject(project)
   .setKey(key)
+
+export const userClients = new WeakMap<Context, sdk.Client>();
 
 export const db = new sdk.Databases(client)
 export const users = new sdk.Users(client)

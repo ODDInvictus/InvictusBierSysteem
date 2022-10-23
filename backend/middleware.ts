@@ -1,29 +1,53 @@
 import { Context } from "https://deno.land/x/oak@v11.1.0/context.ts";
-import { helpers } from "https://deno.land/x/oak@v11.1.0/mod.ts";
+import * as sdk from 'https://deno.land/x/appwrite@6.1.0/mod.ts'
 import { hasAdminPowers, Roles } from "./roles.ts"
-import { users } from "./sdk.ts";
+import { userClients, users } from "./sdk.ts";
 
 export async function requireAdmin(ctx: Context, next: any) {
-  const query = helpers.getQuery(ctx)
+  let token = ctx.request.headers.get('Authorization')
 
-  const apiKey = query['apiKey']
-  const userId = query['userId']
-
-  return
-
-  if (!apiKey || !userId) {
-    ctx.response.status = 400
+  if (!token) {
+    ctx.response.status = 401
     ctx.response.body = {
-      message: 'Missing query parameters!',
-      requiredParameters: ['apiKey', 'userId'],
-      parameters: query
-    } 
-    
+      message: 'No Authorization header provided',
+    }
     return
   }
 
-  await hasAdminPowers(userId)
+  token = token.replace('Bearer ', '')
 
-  ctx.response.status = 403
-  ctx.response.body = 'You do not have access to this resource!'
+  let client = userClients.get(ctx)
+
+  if (!client) {
+    try {
+      client = new sdk.Client()
+      client
+        .setEndpoint(Deno.env.get('IBS_APPWRITE_ENDPOINT')!)
+        .setProject(Deno.env.get('IBS_APPWRITE_PROJECT')!)
+        .setJWT(token)
+      userClients.set(ctx, client)
+    } catch (e) {
+      ctx.response.status = 401
+      ctx.response.body = {
+        message: 'Invalid token',
+      }
+      return
+    }
+  }
+
+  const teamsApi = new sdk.Teams(client)
+  
+  const teams = await teamsApi.list()
+
+  const names = teams.teams.map(t => t.name)
+
+  if (names.includes('Admin') || names.includes('Senaat')) {
+    await next()
+  } else {
+    ctx.response.status = 403
+    ctx.response.body = {
+      message: 'You do not have the required permissions',
+    }
+    return
+  }
 }

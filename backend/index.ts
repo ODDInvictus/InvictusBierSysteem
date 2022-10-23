@@ -8,8 +8,8 @@ const app = new Application()
 // middleware
 app.use(oakCors())
 
-app.use(router.routes())
 app.use(router.allowedMethods())
+app.use(router.routes())
 app.addEventListener(
   "listen",
   () => console.log("Listening on http://localhost:8080"),
