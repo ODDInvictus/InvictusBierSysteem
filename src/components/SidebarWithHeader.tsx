@@ -91,6 +91,7 @@ const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
 
   const [notAdmin] = useState<boolean>(!(roles.includes(Roles.Admin) || roles.includes(Roles.Senaat)))
   const [notColosseum] = useState<boolean>(!roles.includes(Roles.Colosseum))
+  const [notMember] = useState<boolean>(!roles.includes(Roles.Lid))
 
   return (
     <Box
@@ -114,7 +115,7 @@ const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
       <NavItem key={'Kalender'} icon={AiOutlineSchedule} link="/kalender" onClick={onClose}>
         Kalender
       </NavItem>
-      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notAdmin} onClick={onClose}>
+      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notMember} onClick={onClose}>
         Voorraad
       </NavItem>
       <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={notAdmin} onClick={onClose}>
@@ -268,12 +269,12 @@ const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
             <MenuList
               bg={useColorModeValue('white', 'gray.900')}
               borderColor={useColorModeValue('gray.200', 'gray.700')}>
-              <MenuItem onClick={() => setLocation('/profile')}>Profile</MenuItem>
-              <MenuItem onClick={() => setLocation('/settings')}>Settings</MenuItem>
-              <MenuItem onClick={() => setLocation('/about')}>About</MenuItem>
-              <MenuItem onClick={() => toggleColorMode()}>Toggle color</MenuItem>
+              <MenuItem onClick={() => setLocation('/profile')}>Profiel</MenuItem>
+              <MenuItem onClick={() => setLocation('/instellingen')}>Instellingen</MenuItem>
+              <MenuItem onClick={() => setLocation('/about')}>Over IBS</MenuItem>
+              <MenuItem onClick={() => toggleColorMode()}>Wissel kleurschema</MenuItem>
               <MenuDivider />
-              <MenuItem onClick={() => signOut()}>Sign out</MenuItem>
+              <MenuItem onClick={() => signOut()}>Log uit</MenuItem>
             </MenuList>
           </Menu>
         </Flex>

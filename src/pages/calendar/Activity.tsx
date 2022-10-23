@@ -190,7 +190,7 @@ export default function Activity() {
               Biertelling
             </StyledButton>
             <StyledButton>
-              Maak declaratie
+              Doe declaratie
             </StyledButton>
             <StyledButton onClick={onOpen}>
               Wijzig Activiteit
