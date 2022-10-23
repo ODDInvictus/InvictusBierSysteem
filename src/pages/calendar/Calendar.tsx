@@ -18,6 +18,7 @@ export default function Calendar() {
   
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700'),
+    text: useColorModeValue('underline', 'none')
   }
   useEffect(() => {
     setTitle('Kalender')
@@ -103,7 +104,7 @@ export default function Calendar() {
                 <Text>Datum: {formatDate(new Date(a.datum))} om {formatTime(new Date(a.datum))}</Text>
                 <LinkElem 
                   color="purple.500" 
-                  textDecoration={useColorModeValue('underline', 'none')}
+                  textDecoration={colors.text}
                   as={Link} 
                   href={'/kalender/' + a.$id}>
                   Meer info
