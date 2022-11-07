@@ -16,7 +16,7 @@ export default function Activity() {
   const [users, setUsers]           = useState<Models.Membership[]>()
   const [user, setUser]             = useState<Models.Account<Models.Preferences>>()
   const [event, setEvent]           = useState<any>({})
-  const [commissies, setCommissies]           = useState<string[]>()
+  const [commissies, setCommissies] = useState<string[]>()
   
   const [error, setError]           = useState<string>()
 
@@ -189,8 +189,8 @@ export default function Activity() {
             <StyledButton>
               Biertelling
             </StyledButton>
-            <StyledButton>
-              Doe declaratie
+            <StyledButton onClick={() => setLocation('/financieel/mutaties/' + activiteit.$id)}>
+              Mutaties
             </StyledButton>
             <StyledButton onClick={onOpen}>
               Wijzig Activiteit

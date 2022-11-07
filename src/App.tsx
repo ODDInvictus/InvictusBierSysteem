@@ -26,6 +26,8 @@ import Purchases from './pages/inventory/Purchases'
 import NewSale from './pages/inventory/NewSale'
 import Sales from './pages/inventory/Sales'
 import NewActivity from './pages/calendar/NewActivity'
+import FinancialHome from './pages/financial/FinancialHome'
+import SalesMutation from './pages/financial/SalesMutation'
 
 export default function App() {
   // state
@@ -124,6 +126,14 @@ export default function App() {
               <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Inventory />} />
             </Route>
 
+            {/* Financieel */}
+            <Route path="/financieel/mutaties/:activiteitId">
+              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Kasco]} currentRoles={roles!} element={<SalesMutation />} />
+            </Route>
+
+            <Route path="/financieel">
+              <FinancialHome />
+            </Route>
             
 
             {/* Admin routes */}
