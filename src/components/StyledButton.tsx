@@ -11,8 +11,7 @@ export function StyledButton(props: any) {
         bgGradient: 'linear(to-r, purple.600, purple.500, purple.400)',
         color: 'white',
       }}
-      {...rest}
-    >
+      {...rest}>
       {children}
     </Button>
   )
