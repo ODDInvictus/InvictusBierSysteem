@@ -30,7 +30,8 @@ import {
   FiSettings,
 } from 'react-icons/fi'
 import { AiOutlineSchedule } from 'react-icons/ai'
-import { FaPeopleCarry } from 'react-icons/fa' 
+import { FaPeopleCarry } from 'react-icons/fa'
+import { TbZoomMoney } from 'react-icons/tb' 
 import { MdOutlineInventory2, MdOutlinePeopleAlt, MdOutlineAdminPanelSettings } from 'react-icons/md'
 import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
@@ -114,6 +115,9 @@ const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
       </NavItem>
       <NavItem key={'Kalender'} icon={AiOutlineSchedule} link="/kalender" onClick={onClose}>
         Kalender
+      </NavItem>
+      <NavItem key={'Financieel'} icon={TbZoomMoney} link="/financieel" onClick={onClose}>
+        Financieel
       </NavItem>
       <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notMember} onClick={onClose}>
         Voorraad
