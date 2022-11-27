@@ -28,12 +28,13 @@ import Sales from './pages/inventory/Sales'
 import NewActivity from './pages/calendar/NewActivity'
 import FinancialHome from './pages/financial/FinancialHome'
 import SalesMutation from './pages/financial/SalesMutation'
-import { getUser } from './utils/backend'
+import { checkToken, getToken, getUser } from './utils/backend'
+import { User } from './types/users'
 
 export default function App() {
   // state
   const [loading, setLoading] = useState<boolean>(true)
-  const [profile, setProfile] = useState<Models.Account<Models.Preferences>>()
+  const [user, setUser]       = useState<User>()
   const [roles, setRoles]     = useState<Roles[]>()
   const [icon, setIcon]       = useState<string>()
 
@@ -44,41 +45,21 @@ export default function App() {
   useEffect(() => {
     const load = () => setTimeout(() => setLoading(false), 2000)
     
+    const token = getToken()
+
+    if (!token) {
+      console.log('Token nog found or not valid anymore')
+      setLocation('/auth')
+      setLoading(false)
+      return
+    }
+
     const user = getUser()
+    setUser(user)
 
-    
-
-    // window.account.get()
-    //   .then(async () => {
-    //     const profile = await window.account.get()
-
-    //     const d = profile.prefs.defaultLocation
-
-    //     setProfile(profile)
-    //     let i
-    //     try {
-    //       i = window.storage.getFilePreview(
-    //         import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
-    //         profile.prefs.icon,
-    //       ).href
-    //     } catch (e) {
-    //       i = '/missing.jpg'
-    //     }
-    //     setIcon(i)
-
-    //     if (d && d !== '/' && d !== 'disable') setLocation(d)
-    //   })
-    //   .then(async () => {
-    //     const r = await getRoles()
-    //     setRoles(r)
-    //   })
-    //   .then(load)
-    //   .catch(e => {
-    //     console.error(e)
-    //     console.log('not logged in')
-    //     setLocation('/auth')
-    //     load()
-    //   })
+    setIcon(user?.profile_picture ?? './missing.jpg')
+    setRoles([Roles.Admin])
+    load()
   }, [])
 
   const loadingPage = <LoadingPage />
@@ -93,7 +74,7 @@ export default function App() {
         <Route path="/auth/forgot-password"><ForgotPassword /></Route>
         <Route path="/auth"><Auth /></Route>
 
-        <SidebarWithHeader profile={profile!} icon={icon!} roles={roles!}>
+        <SidebarWithHeader user={user!} icon={icon!} roles={roles!}>
           <Switch>
             {/* Kalender */}
             <Route path="/kalender/nieuw">

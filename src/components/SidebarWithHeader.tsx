@@ -38,9 +38,10 @@ import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
 import { Models } from 'appwrite'
 import { getRoles, Roles } from '../utils/user'
+import { User } from '../types/users'
 
 interface SidebarWithHeaderProps {
-  profile: Models.Account<Models.Preferences>
+  user: User
   icon: string
   children: ReactNode
   roles: Roles[]
@@ -52,7 +53,7 @@ interface LinkItemProps {
   link: string;
 }
 
-export default function SidebarWithHeader({ profile, children, icon, roles }: SidebarWithHeaderProps) {
+export default function SidebarWithHeader({ user, children, icon, roles }: SidebarWithHeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
@@ -75,7 +76,7 @@ export default function SidebarWithHeader({ profile, children, icon, roles }: Si
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} profile={profile} icon={icon} roles={roles}/>
+      <MobileNav onOpen={onOpen} user={user} icon={icon} roles={roles}/>
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -177,11 +178,11 @@ const NavItem = ({ icon, children, link, onClick, ...rest }: NavItemProps) => {
 
 interface MobileProps extends FlexProps {
   onOpen: () => void;
-  profile?: Models.Account<Models.Preferences>
+  user?: User
   icon?: string
   roles: Roles[]
 }
-const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
+const MobileNav = ({ onOpen, user, icon, roles, ...rest }: MobileProps) => {
   const [bestRole, setBestRole] = useState<Roles>(Roles.Lid)
 
   const { toggleColorMode } = useColorMode()
@@ -260,7 +261,7 @@ const MobileNav = ({ onOpen, profile, icon, roles, ...rest }: MobileProps) => {
                   alignItems="flex-start"
                   spacing="1px"
                   ml="2">
-                  <Text fontSize="sm">{profile?.name ?? 'Username'}</Text>
+                  <Text fontSize="sm">{user?.username ?? 'Username'}</Text>
                   <Text fontSize="xs" color="gray.600">
                     {bestRole}
                   </Text>

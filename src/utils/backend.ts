@@ -1,12 +1,26 @@
 function saveToken(token: string) {
-  localStorage.setItem('ibs::token', token)
+  localStorage.setItem('ibs::token', JSON.stringify({
+    token,
+    dateSet: Date.now()
+  }))
 }
 
 /**
  * TODO: Check if token is still valid
  */
-function getToken() {
-  return localStorage.getItem('ibs::token')
+export function getToken() {
+  const token = localStorage.getItem('ibs::token')
+  if (token) {
+    const a  = JSON.parse(token)
+    
+    // If token is older than 8 hours, delete it
+    if (Date.now() - a.dateSet > 8 * 60 * 60 * 1000) {
+      localStorage.removeItem('ibs::token')
+      return null
+    }
+
+    return a.token
+  }
 }
 
 export function setUser(user: any) {
@@ -15,8 +29,25 @@ export function setUser(user: any) {
 
 export function getUser() {
   const user = localStorage.getItem('ibs::user')!
-  return user
+  return JSON.parse(user)
 }
+
+export function setCommittees(committees: string) {
+  localStorage.setItem('ibs::committees', JSON.stringify(committees))
+}
+
+export function getCommittees() {
+  return localStorage.getItem('ibs::committees')!
+}  
+
+export function setCommitteeFunctions(functions: string) {
+  localStorage.setItem('ibs::committeeFunctions', JSON.stringify(functions))
+}
+
+export function getCommitteeFunctions() {
+  return localStorage.getItem('ibs::committeeFunctions')!
+}
+  
 
 function baseUrl() {
   return import.meta.env.VITE_BACKEND_ENDPOINT
@@ -25,9 +56,11 @@ function baseUrl() {
 export async function checkToken() {
   const token = getToken()
   if (!token) return false
-  const valid = await post('/auth/check/', { token })
+  const res: any = await post('user/token-valid/', { token })
 
-  if (valid) return true
+  if (res.details !== '') return false
+
+  if (res) return true
 
   saveToken('')
   return false
@@ -35,11 +68,17 @@ export async function checkToken() {
 
 
 export async function login(username: string, password: string) {
-  post('user/login/', { username, password }, true)
+  await post('user/login/', { username, password }, true)
     .then((res: any) => {
-      const { user, token } = res
+      const { user, token, committees, committee_members } = res
       saveToken(token)
       setUser(user)
+      setCommittees(committees)
+      setCommitteeFunctions(committee_members)
+      alert()
+    })
+    .catch(err => {
+      console.error(err)
     })
 }
 
