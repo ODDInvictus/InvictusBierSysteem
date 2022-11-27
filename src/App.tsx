@@ -28,6 +28,7 @@ import Sales from './pages/inventory/Sales'
 import NewActivity from './pages/calendar/NewActivity'
 import FinancialHome from './pages/financial/FinancialHome'
 import SalesMutation from './pages/financial/SalesMutation'
+import { getUser } from './utils/backend'
 
 export default function App() {
   // state
@@ -42,38 +43,42 @@ export default function App() {
 
   useEffect(() => {
     const load = () => setTimeout(() => setLoading(false), 2000)
+    
+    const user = getUser()
 
-    window.account.get()
-      .then(async () => {
-        const profile = await window.account.get()
+    
 
-        const d = profile.prefs.defaultLocation
+    // window.account.get()
+    //   .then(async () => {
+    //     const profile = await window.account.get()
 
-        setProfile(profile)
-        let i
-        try {
-          i = window.storage.getFilePreview(
-            import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
-            profile.prefs.icon,
-          ).href
-        } catch (e) {
-          i = '/missing.jpg'
-        }
-        setIcon(i)
+    //     const d = profile.prefs.defaultLocation
 
-        if (d && d !== '/' && d !== 'disable') setLocation(d)
-      })
-      .then(async () => {
-        const r = await getRoles()
-        setRoles(r)
-      })
-      .then(load)
-      .catch(e => {
-        console.error(e)
-        console.log('not logged in')
-        setLocation('/auth')
-        load()
-      })
+    //     setProfile(profile)
+    //     let i
+    //     try {
+    //       i = window.storage.getFilePreview(
+    //         import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
+    //         profile.prefs.icon,
+    //       ).href
+    //     } catch (e) {
+    //       i = '/missing.jpg'
+    //     }
+    //     setIcon(i)
+
+    //     if (d && d !== '/' && d !== 'disable') setLocation(d)
+    //   })
+    //   .then(async () => {
+    //     const r = await getRoles()
+    //     setRoles(r)
+    //   })
+    //   .then(load)
+    //   .catch(e => {
+    //     console.error(e)
+    //     console.log('not logged in')
+    //     setLocation('/auth')
+    //     load()
+    //   })
   }, [])
 
   const loadingPage = <LoadingPage />
