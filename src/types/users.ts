@@ -52,3 +52,37 @@ export type CommitteeMember = {
   end: string
   active: boolean
 }
+
+// export type CommitteeName = 'Admin' | 'Senaat' | 'Colosseum' | 'FinanCie' | 'Bakkentrekker' | 'Lid' | 'Feut'
+
+// Dit zijn commissie namen zoals ze in AD staan. Als je dit ergens in een UI wil hebben staan kan je singularCommitteeName gebruiken.
+export enum CommitteeName {
+  Admins = 'Admins',
+  Senaat = 'Senaat',
+  Colosseum = 'Colosseum',
+  FinanCie = 'FinanCie',
+  Bakkentrekkers = 'Bakkentrekkers',
+  Leden = 'Leden',
+  Feuten = 'Feuten', 
+}
+
+export function singularCommitteeName(name: CommitteeName): string {
+  switch (name) {
+  case CommitteeName.Admins:
+    return 'Admin'
+  case CommitteeName.Senaat:
+    return 'Senaat'
+  case CommitteeName.Colosseum:
+    return 'Colosseum'
+  case CommitteeName.FinanCie:
+    return 'FinanCie'
+  case CommitteeName.Bakkentrekkers:
+    return 'Bakkentrekker'
+  case CommitteeName.Leden:
+    return 'Lid'
+  case CommitteeName.Feuten:
+    return 'Feut'
+  default:
+    return 'Alles is stuk'
+  }
+}
