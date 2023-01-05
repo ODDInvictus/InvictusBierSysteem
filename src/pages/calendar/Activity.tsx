@@ -1,24 +1,34 @@
-import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, Modal, HStack, Center, useToast, useDisclosure, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter, FormControl, FormLabel, Input, Textarea, Select } from '@chakra-ui/react'
-import { Models } from 'appwrite'
-import { useEffect, useRef, useState } from 'react'
+import { Box, Divider, Heading, SimpleGrid, useColorModeValue, VStack, Text, Button, Image, Modal, HStack, Center, useToast, useDisclosure, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter, FormControl, FormLabel, Input, Textarea, Select, Stack, List, ListItem, ListIcon, AvatarBadge, Avatar, Flex, Icon, Grid, GridItem } from '@chakra-ui/react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import ICalLink from 'react-icalendar-link'
+import { ICalEvent } from 'react-icalendar-link/dist/utils'
 import { useLocation, useRoute } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
-import { Activiteit } from '../../types/backend'
-import { fetchBackend, setTitle } from '../../utils/utils'
+import { Activity, Participant } from '../../types/activity'
+import { Committee, User } from '../../types/users'
+import { cache } from '../../utils/cache'
+import { client } from '../../utils/client'
+import { BsClockFill, BsFillCalendarDateFill, BsFillGeoAltFill, BsPeopleFill } from 'react-icons/bs'
+import { setTitle } from '../../utils/utils'
 import ErrorPage from '../ErrorPage'
 import LoadingPage from '../LoadingPage'
 
-export default function Activity() {
+export default function ActivityDetail() {
   
-  const [activiteit, setActiviteit] = useState<Activiteit>()
-  const [users, setUsers]           = useState<Models.Membership[]>()
-  const [user, setUser]             = useState<Models.Account<Models.Preferences>>()
-  const [event, setEvent]           = useState<any>({})
-  const [commissies, setCommissies] = useState<string[]>()
+  const [activity, setActivity]         = useState<Activity>()
+  const [participants, setParticipants] = useState<Participant[]>()
+  const [event, setEvent]               = useState<ICalEvent>()
+  const [committees, setCommittees]     = useState<string[]>()
+  const [error, setError]               = useState<string>()
+
+  // Soms werkt react gewoon niet echt mee
+  const [, updateState] = useState<unknown>()
+  const forceUpdate = useCallback(() => updateState({}), [])
+
+  // As this point we know the user is logged in
+  const [user] = useState<User>(cache.get<User>('user')!)
   
-  const [error, setError]           = useState<string>()
 
   const route = useRoute('/kalender/:id')[1]
   const [_, setLocation] = useLocation()
@@ -33,75 +43,91 @@ export default function Activity() {
   useEffect(() => {
     if (!route || !route.id) return
 
-    window.db.getDocument('main', 'activiteiten', route.id)
-      .then(a => {
-        const activiteit = a as unknown as Activiteit
-        setTitle(activiteit.naam)
-        setActiviteit(activiteit)
+    client.get<{ activity: Activity, participants: Participant[] }>(`/activity/${route.id}/`)
+      .then(({ activity, participants }) => {
+        setTitle(activity.name)
+        setActivity(activity)
+        const startTime = `${activity.date}T${activity.start_time}`
+        const endTime = new Date(new Date(startTime).getTime() + 5 * 60 * 60 * 1000).toISOString()
+
         setEvent({
-          title: activiteit.naam,
-          description: activiteit.omschrijving,
-          startTime: new Date(activiteit.datum),
-          endTime: new Date(new Date(activiteit.datum).getTime() + 5 * 60 * 60 * 1000),
-          location: a.locatie
+          title: activity.name,
+          description: activity.description,
+          startTime: startTime,
+          endTime: endTime,
+          location: activity.location,
+          attendees: participants.filter(p => p.present).map(p => `${p.user} <${p.email}>`)
         })
-      }).then(() => {
-        window.teams.listMemberships('lid')
-          .then(memberships => setUsers(memberships.memberships))
-          .catch(e => setUsers([]))
-      }).then(() => {
-        window.account.get()
-          .then(setUser)
-      }).then(() => {
-        fetchBackend('roles', true)
-          .then(d => {
-            if (d.message) {
-              setError(d.message)
-              return
-            }
-            setCommissies(d)
-          })
-      }).catch(err => {
-        setError(err.message)
+
+        setParticipants(participants)
       })
   }, [])
 
-  const formatDate = (d: Date) => {
+  const formatDate = (str: string) => {
+    const d = new Date(str)
     return `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`
   }
 
-  const formatTime = (d: Date) => {
-    return `${d.getHours()}:${(d.getMinutes()<10?'0':'') + d.getMinutes() }`
+  const formatTime = (str: string) => {
+    const d = str.split(':')
+    if (d.length < 2) return str
+    return `${d[0]}:${d[1]}`
   }
 
-  const setAanwezig = async (aanwezig: boolean) => {
-    if (!activiteit) return
+  const setParticipating = async (participating: boolean) => {
+    if (!activity || !participants) return
 
-    if (aanwezig && activiteit.aanwezigen.includes(user!.$id)) return
-    if (!aanwezig && !activiteit.aanwezigen.includes(user!.$id)) return
+    // If this user is in the participant array
+    const p = participants.filter(p => p.user_id === user.id)
 
-    const newAanwezigen = activiteit.aanwezigen.slice(0)
+    if (p.length === 0) return
 
-    if (aanwezig) {
-      newAanwezigen.push(user!.$id)
-    } else {
-      const idx = newAanwezigen.indexOf(user!.$id)
-      newAanwezigen.splice(idx, 1)
-    }
+    if (p[0].present === participating) return
 
-    const a = await window.db.updateDocument('main', 'activiteiten', activiteit.$id, {
-      aanwezigen: newAanwezigen
-    })
+    setParticipants(participants.map(p => {
+      if (p.user_id === user.id) {
+        p.present = participating
+      }
+      return p
+    }))
 
-    setActiviteit(a as unknown as Activiteit)
+    client.post(`/activity/participation/${activity.id}/`, { present: participating })
+      .then(() => {
+        if (participating) {
+          toast({
+            title: 'Successvol ingeschreven!',
+            description: 'Gezellig!',
+            status: 'success',
+            duration: 3000,
+            isClosable: true,
+          })
+        } else {
+          toast({
+            title: 'Successvol uitgeschreven!',
+            description: 'Erg sip',
+            status: 'error',
+            duration: 3000,
+            isClosable: true,
+          })
+        }
+      }).catch(e => {
+        console.error(e)
+        toast({
+          title: 'Alles is stuk',
+          description: e.message,
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        })
+      })
   }
 
   const deleteActivity = () => {
-    if (!activiteit) return
+    if (!activity) return
 
-    if (!confirm(`Weet je zeker dat je activiteit: '${activiteit.naam}' wil verwijderen`)) return
+    if (!confirm(`Weet je zeker dat je activiteit: '${activity.name}' wil verwijderen`)) return
 
-    window.db.deleteDocument('main', 'activiteiten', activiteit.$id)
+    client.delete(`/activity/${activity.id}/`)
       .then(() => {
         toast({
           title: 'Activiteit verwijderd',
@@ -124,76 +150,89 @@ export default function Activity() {
 
   if (error) return <ErrorPage error={error} />
 
-  if (!activiteit || !users || !user || !commissies) return <LoadingPage h="80vh" />
+  if (!activity || !participants || !user) return <LoadingPage h="80vh" />
 
   return <Box>
-    <EditActivity activiteit={activiteit} isOpen={isOpen} onClose={onClose} onOpen={onOpen} commissies={commissies}/>
+    <EditActivity activity={activity} isOpen={isOpen} onClose={onClose} onOpen={onOpen} />
     <VStack spacing="20px">
       <Heading as="h1" size="2xl" textAlign="center">
-        {activiteit.naam}
+        {activity.name}
       </Heading>
 
       <Divider borderColor={colors.divider} />
 
-      <SimpleGrid columns={[1, null, 2]} spacing={10} pr="10px" pl="10px">
+      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={10} pr="10px" pl="10px">
         <Card title="Omschrijving">
           <Text>
-            {activiteit.omschrijving}
+            {activity.description}
           </Text>
+
+          <Divider borderColor={colors.divider} pt="10px" />
+
+          <SimpleGrid columns={2}>
+            <Center>
+              <Box>
+                <HStack pt="10px">
+                  <Icon boxSize="1em" as={BsPeopleFill} />
+                  <Text>{activity.organisation.name}</Text>
+                </HStack>
+                <HStack>
+                  <Icon boxSize="1em" as={BsFillCalendarDateFill} />
+                  <Text>{formatDate(activity.date)}</Text>
+                </HStack>
+                <HStack>
+                  <Icon boxSize="1em" as={BsClockFill} />
+                  <Text>{formatTime(activity.start_time)}</Text>
+                </HStack>
+
+                <HStack>
+                  <Icon boxSize="1em" as={BsFillGeoAltFill} />
+                  <Text>{activity.location}</Text>
+                </HStack>
+              </Box>
+            </Center>
+
+            <Center pt="10px">
+              {/* @ts-expect-error Types kloppen niet */}
+              <ICalLink filename="activiteit.ics" event={event}>
+                <StyledButton>
+                  Download ICS
+                </StyledButton>
+              </ICalLink>
+            </Center>
+          </SimpleGrid>
+
+
         </Card>
 
-        <Card title="Informatie">
-          <Text>
-            <b>Organisatie:</b> {activiteit.organisatie}
-          </Text>
-          <Text>
-            <b>Locatie:</b> {activiteit.locatie}
-          </Text>
-          <Text>
-            <b>Datum:</b> {formatDate(new Date(activiteit.datum))}
-          </Text>
-          <Text>
-            <b>Tijd:</b> {formatTime(new Date(activiteit.datum))}
-          </Text>
-
-          <Box pt="10px">
-            {/* @ts-expect-error Types kloppen niet */}
-            <ICalLink filename="activiteit.ics" event={event}>
-              <StyledButton>
-                Download ICS
+        <GridItem rowSpan={2}>
+          <Card title="Aanwezigen" textAlign="center">
+            <HStack justifyContent={'center'}>
+              <StyledButton onClick={() => setParticipating(true)}>
+                Ik ben bij 🐝
+              </StyledButton>      
+              <StyledButton onClick={() => setParticipating(false)}>
+                Ik ben niet bij 😔
               </StyledButton>
-            </ICalLink>
-          </Box>
+            </HStack>
+            <Divider color={colors.divider} pt="10px"/>
+            <Aanwezigen participants={participants} />
+          </Card>
+        </GridItem>
 
-        </Card>
 
-        <Card title="Aanwezigen" textAlign="center">
-          <HStack justifyContent={'center'}>
-            <StyledButton onClick={() => setAanwezig(true)}>
-              Ik ben bij 🐝
-            </StyledButton>      
-            <StyledButton onClick={() => setAanwezig(false)}>
-              Ik ben niet bij 😔
-            </StyledButton>
-          </HStack>
-
-  
-          <Divider color={colors.divider} pt="10px"/>
-
-          <Aanwezigen activiteit={activiteit} users={users} />
-
-        </Card>
-
-        <Card title="Acties">
-          <SimpleGrid columns={2} pt="5px" spacing={3}>
+        <Card title="Acties" textAlign="center">
+          <SimpleGrid columns={2} pt="10px" spacing={3}>
             <StyledButton>
               Biertelling
             </StyledButton>
-            <StyledButton onClick={() => setLocation('/financieel/mutaties/' + activiteit.$id)}>
-              Mutaties
+            <StyledButton>
+              Doe declaratie
             </StyledButton>
+            
+
             <StyledButton onClick={onOpen}>
-              Wijzig Activiteit
+              Wijzig
             </StyledButton>
             <Button
               color="white"
@@ -203,10 +242,11 @@ export default function Activity() {
               _hover={{
                 bgGradient: 'linear(to-r, red.600,red.500)',
               }}>
-              Verwijder Activiteit
+              Verwijder
             </Button>
           </SimpleGrid>
         </Card>
+
       </SimpleGrid>
     </VStack>
 
@@ -214,22 +254,22 @@ export default function Activity() {
 }
 
 type AanwezigenProps = {
-  activiteit: Activiteit
-  users: Models.Membership[]
+  participants: Participant[]
 }
 
-function Aanwezigen({ activiteit, users }: AanwezigenProps) {
+function Aanwezigen({ participants }: AanwezigenProps) {
   
-  const [afwezigen, setAfwezigen] = useState<Models.Membership[]>([])
-  const [aanwezigen, setAanwezigen] = useState<Models.Membership[]>([])
+  const [yes, setYes] = useState<Participant[]>([])
+  const [no, setNo] = useState<Participant[]>([])
 
   useEffect(() => {
-    setAfwezigen(users.filter(u => !activiteit.aanwezigen.includes(u.userId)))
-    setAanwezigen(users.filter(u => activiteit.aanwezigen.includes(u.userId)))
-  }, [activiteit])
+    // Create initial state
+    setYes(participants.filter(p => p.present))
+    setNo(participants.filter(p => !p.present))
+  }, [participants])
 
   return <Box>
-    {users.length === 0 ? 
+    {participants.length === 0 ? 
       <Center width="100%">
         <Box>
           <Heading>
@@ -240,24 +280,45 @@ function Aanwezigen({ activiteit, users }: AanwezigenProps) {
           </Text>
         </Box>
       </Center> :
-      <SimpleGrid columns={2} spacing={3}>
+      <Center>
         <VStack pt="10px">
-          <Heading size="sm">Aanwezigen</Heading>
-          {aanwezigen.map(u => <Text key={u.$id}>{u.userName}</Text>)}
+          {yes.map(u => <UserCard key={u.user_id} participant={u} />)}
+          {no.map(u => <UserCard key={u.user_id} participant={u} />)}
         </VStack>
+      </Center>
 
-        <VStack pt="10px">
-          <Heading size="sm">Afwezigen</Heading>
-          {afwezigen.map(u => <Text key={u.$id}>{u.userName}</Text>)}
-        </VStack>
-      </SimpleGrid>
     }
   </Box>
 }
 
+type UserCardProps = {
+  participant: Participant
+}
+
+function UserCard({ participant }: UserCardProps) {
+
+  const [color, setColor] = useState(participant.present ? 'green.500' : 'red.500')
+
+  useEffect(() => {
+    if (participant.present) {
+      setColor('green.500')
+    } else {
+      setColor('red.500')
+    }
+  }, [participant])
+
+  return <HStack direction='row' width='100%'>
+    <Avatar size='sm' src={import.meta.env.VITE_STATIC_ENDPOINT + participant.profile_picture}>
+      <AvatarBadge boxSize="1.25em" bg={color} />
+    </Avatar>
+    <Text>
+      {participant.user}
+    </Text>
+  </HStack>
+}
+
 type EditActivityProps = {
-  activiteit: Activiteit
-  commissies: string[]
+  activity: Activity
   isOpen: boolean
   onClose: () => void
   onOpen: () => void
@@ -265,16 +326,27 @@ type EditActivityProps = {
 
 function EditActivity (props: EditActivityProps) {
 
-  const [ naam, setNaam ] = useState<string>(props.activiteit.naam)
-  const [ omschrijving, setOmschrijving ] = useState<string>(props.activiteit.omschrijving)
-  const [ organisatie, setOrganisatie ] = useState<string>(props.activiteit.organisatie)
-  const [ locatie, setLocatie ] = useState<string>(props.activiteit.locatie)
-  const [ datum, setDatum ] = useState<Date>(new Date(props.activiteit.datum))
+  const [ name, setName ] = useState<string>(props.activity.name)
+  const [ description, setDescription ] = useState<string>(props.activity.description)
+  const [ committee, setCommittee ] = useState<number>(props.activity.organisation.id)
+  const [ location, setLocation ] = useState<string>(props.activity.location)
+  const [ date, setDate ] = useState<Date>()
 
   const toast = useToast()
 
+  useEffect(() => {
+    const date = new Date(props.activity.date)
+    const split = props.activity.start_time.split(':')
+    if (split.length === 3) {
+      date.setHours(parseInt(split[0]))
+      date.setMinutes(parseInt(split[1]))
+      date.setSeconds(parseInt(split[2]))
+    }
+    setDate(date)
+  }, [])
+
   const save = () => {
-    if (naam === '' || omschrijving === '' || organisatie === '' || locatie === '' || !datum) {
+    if (name === '' || description === '' || !committee || location === '' || !date) {
       toast({
         title: 'Oeps!',
         description: 'Je bent iets vergeten in te vullen',
@@ -285,15 +357,17 @@ function EditActivity (props: EditActivityProps) {
       return
     }
 
-    const activiteit = {
-      naam,
-      omschrijving,
-      organisatie,
-      locatie,
-      datum: datum.toISOString(),
+    const newActivity = {
+      name,
+      description,
+      committee,
+      location,
+      date: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+      start_time: `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
     }
 
-    window.db.updateDocument('main', 'activiteiten', props.activiteit.$id, activiteit)
+    // window.db.updateDocument('main', 'activiteiten', props.activiteit.$id, activiteit)
+    client.patch<void>(`/activity/update/${props.activity.id}/`, newActivity)
       .then(() => {
         toast({
           title: 'Gelukt!',
@@ -302,7 +376,7 @@ function EditActivity (props: EditActivityProps) {
           duration: 2000,
           isClosable: true,
         })
-        setTimeout(() => location.reload(), 2000)
+        setTimeout(() => window.location.reload(), 2000)
       }).catch(err => {
         toast({
           title: 'Oeps!',
@@ -329,41 +403,42 @@ function EditActivity (props: EditActivityProps) {
           <FormControl>
             <FormLabel>Naam</FormLabel>
             <Input 
-              value={naam}
-              onChange={(e) => setNaam(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Naam"/>
           </FormControl>
 
           <FormControl>
             <FormLabel>Omschrijving</FormLabel>
             <Textarea
-              value={omschrijving}
-              onChange={(e) => setOmschrijving(e.target.value)}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="Omschrijving"/>
           </FormControl>
 
           <FormControl>
             <FormLabel>Organisatie</FormLabel>
             <Select
-              value={organisatie}
-              onChange={(e) => setOrganisatie(e.target.value)}>
-              {props.commissies.map(c => <option key={c} value={c}>{c}</option>)}
+              value={committee}
+              onChange={(e) => setCommittee(parseInt(e.target.value))}>
+              {/* //TODO */}
+              {/* {props.commissies.map(c => <option key={c} value={c}>{c}</option>)} */}
             </Select>
           </FormControl>
           
           <FormControl>
             <FormLabel>Locatie</FormLabel>
             <Input
-              value={locatie}
-              onChange={(e) => setLocatie(e.target.value)}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
               placeholder="Locatie"/>
           </FormControl>
 
           <FormControl>
-            <FormLabel>Datum</FormLabel>
+            <FormLabel>Datum (huidig {date?.toLocaleString('nl')})</FormLabel>
             <Input
               type="datetime-local"
-              onChange={(e) => setDatum(new Date(e.target.value))}
+              onChange={(e) => setDate(new Date(e.target.value))}
               placeholder="Datum"/>
           </FormControl>
 

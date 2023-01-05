@@ -1,18 +1,16 @@
 import { Box, Divider, Heading, Link as LinkElem, useColorModeValue, VStack, Text, Container, Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel, Center, Table, TableCaption, TableContainer, Tbody, Td, Tfoot, Th, Thead, Tr, Button, HStack, Show, SimpleGrid } from '@chakra-ui/react'
-import { Query } from 'appwrite'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
+import { Activity } from '../../types/activity'
+import { client } from '../../utils/client'
 import { setTitle } from '../../utils/utils'
-
-// export type Activity = {
-
-// }
 
 export default function Calendar() {
 
-  const [activities, setActivities] = useState<any[]>([])
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [err, setErr]               = useState<string | undefined>(undefined)
 
   const [_, setLocation] = useLocation()
   
@@ -23,17 +21,20 @@ export default function Calendar() {
   useEffect(() => {
     setTitle('Kalender')
     
-    window.db.listDocuments('main', 'activiteiten', [
-      Query.greaterThan('datum', new Date().toISOString())
-    ]).then(a => setActivities(a.documents))
+    client.get<Activity[]>('/activity/')
+      .then(setActivities)
+      .catch(setErr)
   }, [])
 
-  const formatDate = (d: Date) => {
+  const formatDate = (str: string) => {
+    const d = new Date(str)
     return `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`
   }
 
-  const formatTime = (d: Date) => {
-    return `${d.getHours()}:${(d.getMinutes()<10?'0':'') + d.getMinutes() }`
+  const formatTime = (str: string) => {
+    const d = str.split(':')
+    if (d.length < 2) return str
+    return `${d[0]}:${d[1]}`
   }
 
   return <Box>
@@ -65,16 +66,16 @@ export default function Calendar() {
               <Tbody>
                 {/* @ts-expect-error Je kan gewoon Date - Date doen niet zo piepen */}
                 {activities.sort((a, b) => (new Date(a.datum)) - (new Date(b.datum))).map(a => (
-                  <Tr key={a.$id}>
+                  <Tr key={a.id}>
                     <Td>
-                      <LinkElem as={Link} href={'/kalender/' + a.$id}>
-                        {a.naam}
+                      <LinkElem as={Link} href={`/kalender/${a.id}/`}>
+                        {a.name}
                       </LinkElem>
                     </Td>
-                    <Td>{a.organisatie}</Td>
-                    <Td>{a.locatie}</Td>
-                    <Td>{formatDate(new Date(a.datum))}</Td>
-                    <Td>{formatTime(new Date(a.datum))}</Td>
+                    <Td>{a.organisation.name}</Td>
+                    <Td>{a.location}</Td>
+                    <Td>{formatDate(a.date)}</Td>
+                    <Td>{formatTime(a.start_time)}</Td>
                   </Tr>
                 ))}
               </Tbody>
@@ -99,14 +100,14 @@ export default function Calendar() {
           <SimpleGrid columns={1} spacing="20px" width="80vw">
             {/* @ts-expect-error Hier ook niet piepen */}
             {activities.sort((a, b) => (new Date(a.datum)) - (new Date(b.datum))).map(a => (
-              <Card title={a.naam} key={a.$id}>
-                <Text>Locatie: {a.locatie}</Text>
-                <Text>Datum: {formatDate(new Date(a.datum))} om {formatTime(new Date(a.datum))}</Text>
+              <Card title={a.name} key={a.id}>
+                <Text>Locatie: {a.location}</Text>
+                <Text>Datum: {formatDate(a.date)} om {formatTime(a.start_time)}</Text>
                 <LinkElem 
                   color="purple.500" 
                   textDecoration={colors.text}
                   as={Link} 
-                  href={'/kalender/' + a.$id}>
+                  href={`/kalender/${a.id}/`}>
                   Meer info
                 </LinkElem>
               </Card>
