@@ -37,14 +37,13 @@ import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
 import { Models } from 'appwrite'
-import { getRoles, Roles } from '../utils/user'
-import { User } from '../types/users'
+import { Committee, CommitteeName, singularCommitteeName, User } from '../types/users'
 
 interface SidebarWithHeaderProps {
   user: User
   icon: string
   children: ReactNode
-  roles: Roles[]
+  committees: Committee[]
 }
 
 interface LinkItemProps {
@@ -53,14 +52,14 @@ interface LinkItemProps {
   link: string;
 }
 
-export default function SidebarWithHeader({ user, children, icon, roles }: SidebarWithHeaderProps) {
+export default function SidebarWithHeader({ user, children, icon, committees }: SidebarWithHeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure()
 
   return (
     <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
       <SidebarContent
         onClose={() => onClose}
-        roles={roles}
+        committees={committees}
         display={{ base: 'none', md: 'block' }}
       />
       <Drawer
@@ -72,11 +71,11 @@ export default function SidebarWithHeader({ user, children, icon, roles }: Sideb
         onOverlayClick={onClose}
         size="full">
         <DrawerContent>
-          <SidebarContent roles={roles} onClose={onClose} />
+          <SidebarContent committees={committees} onClose={onClose} />
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} user={user} icon={icon} roles={roles}/>
+      <MobileNav onOpen={onOpen} user={user} icon={icon} committees={committees}/>
       <Box ml={{ base: 0, md: 60 }} p="4">
         {children}
       </Box>
@@ -86,14 +85,30 @@ export default function SidebarWithHeader({ user, children, icon, roles }: Sideb
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;
-  roles: Roles[];
+  committees: Committee[];
 }
 
-const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
+const SidebarContent = ({ onClose, committees, ...rest }: SidebarProps) => {
 
-  const [notAdmin] = useState<boolean>(!(roles.includes(Roles.Admin) || roles.includes(Roles.Senaat)))
-  const [notColosseum] = useState<boolean>(!roles.includes(Roles.Colosseum))
-  const [notMember] = useState<boolean>(!roles.includes(Roles.Lid))
+  const [isAdmin, setAdmin]         = useState(false)
+  const [isColosseum, setColosseum] = useState(false)
+  const [isMember, setMember]       = useState(false)
+
+  useEffect(() => {
+    committees.forEach(c => {
+      if (c.name === CommitteeName.Admins || c.name === CommitteeName.Senaat) {
+        setAdmin(true)
+      }
+
+      if (c.name === CommitteeName.Colosseum) {
+        setColosseum(true)
+      }
+
+      if (c.name === CommitteeName.Leden) {
+        setMember(true)
+      }
+    })
+  }, [])
 
   return (
     <Box
@@ -120,16 +135,16 @@ const SidebarContent = ({ onClose, roles, ...rest }: SidebarProps) => {
       <NavItem key={'Financieel'} icon={TbZoomMoney} link="/financieel" onClick={onClose}>
         Financieel
       </NavItem>
-      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={notColosseum && notMember} onClick={onClose}>
+      <NavItem key={'Voorraad'} icon={MdOutlineInventory2} link="/voorraad" hidden={!(isColosseum || isAdmin)} onClick={onClose}>
         Voorraad
       </NavItem>
-      <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={notAdmin} onClick={onClose}>
+      <NavItem key={'Admin'} icon={MdOutlineAdminPanelSettings} link="/admin" hidden={isAdmin} onClick={onClose}>
         Admin
       </NavItem>
-      <NavItem key={'Leden'} icon={MdOutlinePeopleAlt} link="/admin/leden" hidden={notAdmin} onClick={onClose}>
+      <NavItem key={'Leden'} icon={MdOutlinePeopleAlt} link="/admin/leden" hidden={!isAdmin} onClick={onClose}>
         Leden
       </NavItem>
-      <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={notAdmin} onClick={onClose}>
+      <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={!isAdmin} onClick={onClose}>
         Commissies
       </NavItem>
       <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen" onClick={onClose}>
@@ -180,10 +195,10 @@ interface MobileProps extends FlexProps {
   onOpen: () => void;
   user?: User
   icon?: string
-  roles: Roles[]
+  committees: Committee[]
 }
-const MobileNav = ({ onOpen, user, icon, roles, ...rest }: MobileProps) => {
-  const [bestRole, setBestRole] = useState<Roles>(Roles.Lid)
+const MobileNav = ({ onOpen, user, icon, committees, ...rest }: MobileProps) => {
+  const [bestCommittee, setBestCommittee] = useState<string>()
 
   const { toggleColorMode } = useColorMode()
   const [_, setLocation]    = useLocation()
@@ -194,27 +209,31 @@ const MobileNav = ({ onOpen, user, icon, roles, ...rest }: MobileProps) => {
   }
 
   useEffect(() => {
-    const r = roles
+    let b = committees[0]
 
-    if (r.includes(Roles.Admin)) {
-      return setBestRole(Roles.Admin)
-    }
-
-    if (r.includes(Roles.Senaat)) {
-      return setBestRole(Roles.Senaat)
-    }
-
-    if (r.includes(Roles.Proeflid)) {
-      return setBestRole(Roles.Proeflid)
-    }
-
-    if (r.includes(Roles.Lid)) {
-      return setBestRole(Roles.Lid)
-    }
-
-    if (r.includes(Roles.Colosseum)) {
-      return setBestRole(Roles.Colosseum)
-    }
+    committees.forEach(c => {
+      switch (c.name as CommitteeName) {
+      case CommitteeName.Senaat:
+        b = c
+        break
+      case CommitteeName.Admins:
+        b = c
+        break
+      case CommitteeName.Feuten:
+        b = c
+        break
+      case CommitteeName.Leden:
+        b = c
+        break
+      case CommitteeName.Colosseum:
+        b = c
+        break
+      default:
+        break
+      }
+      
+      setBestCommittee(singularCommitteeName(b.name as CommitteeName))
+    })
   }, [])
 
   return (
@@ -254,7 +273,7 @@ const MobileNav = ({ onOpen, user, icon, roles, ...rest }: MobileProps) => {
               <HStack>
                 <Avatar
                   size={'sm'}
-                  src={ icon ?? config.account.fallbackUserIcon }
+                  src={ import.meta.env.VITE_STATIC_ENDPOINT + icon ?? config.account.fallbackUserIcon }
                 />
                 <VStack
                   display={{ base: 'none', md: 'flex' }}
@@ -263,7 +282,7 @@ const MobileNav = ({ onOpen, user, icon, roles, ...rest }: MobileProps) => {
                   ml="2">
                   <Text fontSize="sm">{user?.username ?? 'Username'}</Text>
                   <Text fontSize="xs" color="gray.600">
-                    {bestRole}
+                    {bestCommittee ?? 'Alles is stuk'}
                   </Text>
                 </VStack>
                 <Box display={{ base: 'none', md: 'flex' }}>
