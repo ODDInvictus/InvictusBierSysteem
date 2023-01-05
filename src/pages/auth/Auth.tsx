@@ -1,7 +1,8 @@
-import { Flex, Box, FormControl, FormLabel, Input, Checkbox, Stack, Link, Button, Heading, Text, useColorModeValue } from '@chakra-ui/react'
+import { Flex, Box, FormControl, FormLabel, Input, Checkbox, Stack, Button, Heading, Text, useColorModeValue } from '@chakra-ui/react'
 import { useState } from 'react'
-import { Link as NavLink } from 'wouter'
 import { client } from '../../utils/client'
+import '../../styles/Auth.css'
+import { StyledButton } from '../../components/StyledButton'
 
 function getSlogan(): string {
   const arr: string[] = [
@@ -40,7 +41,7 @@ export default function Auth() {
 
   const mainBg = useColorModeValue('gray.50', 'gray.800')
   const squareBg = useColorModeValue('white', 'gray.700')
-  const textColor = useColorModeValue('gray.600', 'white')
+  const textColor = useColorModeValue('white', 'white')
 
   const auth = () => {
     client.login(email, password)
@@ -51,58 +52,57 @@ export default function Auth() {
       })
   }
 
-  return <Flex
-    minH={'100vh'}
-    align={'center'}
-    justify={'center'}
-    bg={mainBg}>
-    <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
-      <Stack align={'center'}>
-        <Heading fontSize={'4xl'}>Log in</Heading>
-        <Text fontSize={'lg'} color={textColor}>
-          {slogan}
-        </Text>
-      </Stack>
-      <Box
-        rounded={'lg'}
-        bg={squareBg}
-        boxShadow={'lg'}
-        p={8}>
-        <Stack spacing={4}>
-          <FormControl id="email">
-            <FormLabel>Gebruikersnaam</FormLabel>
-            <Input type="email" value={email} onChange={c => setEmail(c.target.value)} />
-          </FormControl>
-
-          <FormControl id="password" onKeyPress={e => {
-            if (e.key === 'Enter') {
-              auth()
-            }
-          }}>
-            <FormLabel>Wachtwoord</FormLabel>
-            <Input type="password" value={password} onChange={c => setPassword(c.target.value)} />
-          </FormControl>
-
-          <Stack spacing={10}>
-
-            <Stack
-              direction={{ base: 'column', sm: 'row' }}
-              align={'start'}
-              justify={'space-between'}>
-              <Checkbox>Onthoud mij</Checkbox>
-            </Stack>
-            <Button
-              bg={'purple.400'}
-              color={'white'}
-              onClick={auth}
-              _hover={{
-                bg: 'purple.500',
-              }}>
-              Log in
-            </Button>
-          </Stack>
+  return <Box className='auth-main'>
+    <Flex
+      minH={'100vh'}
+      align={'center'}
+      overflow={'hidden'}
+      justify={'center'}
+      bg={mainBg}>
+      <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6} zIndex={10}>
+        <Stack align={'center'}>
+          <Heading fontSize={'4xl'} textAlign={'center'} color={textColor}>Invictus Bier Systeem</Heading>
+          <Text fontSize={'lg'} color={textColor}>
+            Log in {slogan}
+          </Text>
         </Stack>
-      </Box>
-    </Stack>
-  </Flex>
+        <Box
+          rounded={'lg'}
+          bg={squareBg}
+          boxShadow={'lg'}
+          p={8}>
+          <Stack spacing={4}>
+            <FormControl id="email">
+              <FormLabel>Username</FormLabel>
+              <Input type="email" value={email} onChange={c => setEmail(c.target.value)} />
+            </FormControl>
+
+            <FormControl id="password" onKeyPress={e => {
+              if (e.key === 'Enter') {
+                auth()
+              }
+            }}>
+              <FormLabel>Password</FormLabel>
+              <Input type="password" value={password} onChange={c => setPassword(c.target.value)} />
+            </FormControl>
+
+            <Stack spacing={10}>
+
+              <Stack
+                direction={{ base: 'column', sm: 'row' }}
+                align={'start'}
+                justify={'space-between'}>
+                <Checkbox>Remember me</Checkbox>
+              </Stack>
+              <StyledButton onClick={auth}>
+                Sign in
+              </StyledButton>
+            </Stack>
+          </Stack>
+        </Box>
+      </Stack>
+
+      <Box className="background-shape" /> 
+    </Flex>
+  </Box>
 }
