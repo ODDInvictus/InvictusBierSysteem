@@ -1,7 +1,7 @@
 import { Flex, Box, FormControl, FormLabel, Input, Checkbox, Stack, Link, Button, Heading, Text, useColorModeValue } from '@chakra-ui/react'
 import { useState } from 'react'
 import { Link as NavLink } from 'wouter'
-import { login } from '../../utils/backend'
+import { client } from '../../utils/client'
 
 function getSlogan(): string {
   const arr: string[] = [
@@ -43,7 +43,7 @@ export default function Auth() {
   const textColor = useColorModeValue('gray.600', 'white')
 
   const auth = () => {
-    login(email, password)
+    client.login(email, password)
       .then(() => {
         window.location.href = '/'
       }).catch(err => {
@@ -70,7 +70,7 @@ export default function Auth() {
         p={8}>
         <Stack spacing={4}>
           <FormControl id="email">
-            <FormLabel>Username</FormLabel>
+            <FormLabel>Gebruikersnaam</FormLabel>
             <Input type="email" value={email} onChange={c => setEmail(c.target.value)} />
           </FormControl>
 
@@ -79,7 +79,7 @@ export default function Auth() {
               auth()
             }
           }}>
-            <FormLabel>Password</FormLabel>
+            <FormLabel>Wachtwoord</FormLabel>
             <Input type="password" value={password} onChange={c => setPassword(c.target.value)} />
           </FormControl>
 
@@ -89,8 +89,7 @@ export default function Auth() {
               direction={{ base: 'column', sm: 'row' }}
               align={'start'}
               justify={'space-between'}>
-              <Checkbox>Remember me</Checkbox>
-              <Link as={NavLink} to="/forgot-password" color={'blue.400'}>Forgot password?</Link>
+              <Checkbox>Onthoud mij</Checkbox>
             </Stack>
             <Button
               bg={'purple.400'}
@@ -99,7 +98,7 @@ export default function Auth() {
               _hover={{
                 bg: 'purple.500',
               }}>
-              Sign in
+              Log in
             </Button>
           </Stack>
         </Stack>
