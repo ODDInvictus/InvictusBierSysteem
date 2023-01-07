@@ -38,6 +38,7 @@ import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
 import { Models } from 'appwrite'
 import { Committee, CommitteeName, singularCommitteeName, User } from '../types/users'
+import { client } from '../utils/client'
 
 interface SidebarWithHeaderProps {
   user: User
@@ -204,7 +205,11 @@ const MobileNav = ({ onOpen, user, icon, committees, ...rest }: MobileProps) => 
   const [_, setLocation]    = useLocation()
 
   const signOut = async () => {
-    await window.account.deleteSessions()
+    // Clear the cache
+    localStorage.clear()
+    // Logout
+    await client.logout()
+    // Redirect to home
     window.location.href = '/'
   }
 
@@ -280,7 +285,7 @@ const MobileNav = ({ onOpen, user, icon, committees, ...rest }: MobileProps) => 
                   alignItems="flex-start"
                   spacing="1px"
                   ml="2">
-                  <Text fontSize="sm">{user?.username ?? 'Username'}</Text>
+                  <Text fontSize="sm">{`${user?.first_name} ${user?.last_name}` ?? 'Username'}</Text>
                   <Text fontSize="xs" color="gray.600">
                     {bestCommittee ?? 'Alles is stuk'}
                   </Text>

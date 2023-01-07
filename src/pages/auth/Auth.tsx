@@ -28,7 +28,6 @@ function getSlogan(): string {
     'om te gaan golfen 🏌️‍♂️',
     'om uit te zoomen 📷',
     'om feuten te pesten 🤡',
-    'om heel veel commissies te hebben 🤑',
   ]
 
   return arr[Math.floor(Math.random() * arr.length)]
@@ -73,7 +72,7 @@ export default function Auth() {
           p={8}>
           <Stack spacing={4}>
             <FormControl id="email">
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Gebruikersnaam</FormLabel>
               <Input type="email" value={email} onChange={c => setEmail(c.target.value)} />
             </FormControl>
 
@@ -82,7 +81,7 @@ export default function Auth() {
                 auth()
               }
             }}>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Wachtwoord</FormLabel>
               <Input type="password" value={password} onChange={c => setPassword(c.target.value)} />
             </FormControl>
 
@@ -92,10 +91,10 @@ export default function Auth() {
                 direction={{ base: 'column', sm: 'row' }}
                 align={'start'}
                 justify={'space-between'}>
-                <Checkbox>Remember me</Checkbox>
+                <Checkbox>Onthoud mij</Checkbox>
               </Stack>
               <StyledButton onClick={auth}>
-                Sign in
+                Log in
               </StyledButton>
             </Stack>
           </Stack>

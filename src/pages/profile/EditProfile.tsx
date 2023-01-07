@@ -19,7 +19,6 @@ import { useEffect, useState } from 'react'
 import { getConfig, setTitle } from '../../utils/utils'
 import { Models } from 'appwrite'
 import LoadingPage from '../LoadingPage'
-import { setUserPreferences } from '../../utils/user'
 import { useLocation } from 'wouter'
 
 export default function EditProfile(): JSX.Element {
@@ -77,7 +76,6 @@ export default function EditProfile(): JSX.Element {
       window.storage.createFile(import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID, 'unique()', file)
         .then(f => {
           console.log(f)
-          setUserPreferences({ icon: f.$id })
           toast({
             title: 'Icon uploaded!',
             description: 'Refresh the page to see it',

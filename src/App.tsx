@@ -1,5 +1,4 @@
 import { ScaleFade } from '@chakra-ui/react'
-import { Models } from 'appwrite'
 import React, { useEffect, useState } from 'react'
 import { Route, Router, Switch, useLocation } from 'wouter'
 import SidebarWithHeader from './components/SidebarWithHeader'
@@ -29,6 +28,9 @@ import FinancialHome from './pages/financial/FinancialHome'
 import SalesMutation from './pages/financial/SalesMutation'
 import { Committee, CommitteeMember, CommitteeName, User } from './types/users'
 import { client } from './utils/client'
+import NewSalesMutation from './pages/financial/NewSalesMutation'
+import { cache } from './utils/cache'
+import Streeplijst from './pages/financial/Streeplijst'
 
 export default function App() {
   // state
@@ -47,7 +49,6 @@ export default function App() {
     client.get<{ user: User, committees: Committee[], committee_members: CommitteeMember[]}>('/user/')
       .then(u => {
         if (!u.user) {
-          alert('no user')
           setLocation('/auth')
           setLoading(false)
           return
@@ -55,12 +56,16 @@ export default function App() {
         setUser(u.user)
         setIcon(u.user.profile_picture ?? './missing.jpg')
         setCommittees(u.committees)
+
+        cache.set('user', u.user)
+        cache.set('committees', u.committees)
+        cache.set('committee_members', u.committee_members)
+
         load()
       })
       .catch(err => {
         console.error(err)
         // This endpoint only works when logged in
-        console.log('Token not found or not valid anymore')
         setLocation('/auth')
         setLoading(false)
         return
@@ -71,7 +76,6 @@ export default function App() {
   const loadingPage = <LoadingPage />
 
   const f = [CommitteeName.FinanCie]
-  const c = [CommitteeName.Colosseum]
   const cf = [CommitteeName.Colosseum, CommitteeName.FinanCie]
   const mcf = [CommitteeName.Colosseum, CommitteeName.FinanCie, CommitteeName.Leden]
 
@@ -124,8 +128,15 @@ export default function App() {
             </Route>
 
             {/* Financieel */}
+            <Route path="/financieel/mutaties/nieuw">
+              <ProtectedRoute allowed={f} current={committees!} element={<NewSalesMutation committees={committees!} />} />
+            </Route>
             <Route path="/financieel/mutaties/:activiteitId">
               <ProtectedRoute allowed={f} current={committees!} element={<SalesMutation />} />
+            </Route>
+            
+            <Route path="/financieel/streeplijst/verwerk">
+              <ProtectedRoute allowed={f} current={committees!} element={<Streeplijst />} />
             </Route>
 
             <Route path="/financieel">

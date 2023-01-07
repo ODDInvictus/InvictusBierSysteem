@@ -1,7 +1,7 @@
 import { Box, Divider, Heading, Table, Tbody, Image, Td, Th, Thead, Tr, useColorModeValue, VStack, Link as LinkElem, Button, Tag, Badge, SimpleGrid } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import { DataTable } from '../../components/DataTable'
-import { fetchBackend, setTitle } from '../../utils/utils'
+import { setTitle } from '../../utils/utils'
 import { createColumnHelper, flexRender, getCoreRowModel } from '@tanstack/react-table'
 import { useReactTable } from '@tanstack/react-table'
 import { Link } from 'wouter'
@@ -84,14 +84,14 @@ export default function Members() {
   useEffect(() => {
     setTitle('Leden')
 
-    fetchBackend('users', true)
-      .then(res => {
-        if (res.message) {
-          setError(res.message)
-          return
-        }
-        setRes(res)
-      })    
+    // fetchBackend('users', true)
+    //   .then(res => {
+    //     if (res.message) {
+    //       setError(res.message)
+    //       return
+    //     }
+    //     setRes(res)
+    //   })    
   }, [])
 
   useEffect(() => {

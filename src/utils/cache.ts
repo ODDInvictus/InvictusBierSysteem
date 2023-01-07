@@ -13,6 +13,10 @@ class Cache {
     return undefined
   }
 
+  remove(key: string) {
+    localStorage.removeItem(`ibs::${key}`)
+  }
+
 }
 
 export const cache = new Cache()

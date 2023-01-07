@@ -42,9 +42,8 @@ class APIClient {
       method,
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': this.getCookie('csrftoken') ?? ''
-      },
-      credentials: 'include',
+        'Authorization': `Token ${this.getToken()}`
+      }
     }
 
     if (body) {
@@ -52,6 +51,10 @@ class APIClient {
     }
 
     const res = await fetch(this.url + endpoint, config)
+
+    if (!res.ok) {
+      throw new Error(await res.text())
+    }
 
     const contentType = res.headers.get('Content-Type')
 
@@ -63,53 +66,60 @@ class APIClient {
     return undefined
   }
 
-  private getCookie(name: string) {
-    let cookieValue = null
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';')
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim()
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
-          break
-        }
-      }
+
+  getToken(): string {
+    if (this.token) return this.token
+
+    const token = cache.get<string>('token')
+    const expiry = cache.get<Date>('expiry')
+
+    if (!token || !expiry) {
+      return ''
     }
-    return cookieValue
+
+    // if the token is expired, remove it from the cache and return an empty string
+    if (expiry < new Date()) {
+      cache.remove('token')
+      cache.remove('expiry')
+      return ''
+    }
+
+    this.token = token
+    this.expiry = expiry
+
+    return token
   }
 
   login(username: string, password: string): Promise<void> {
     const headers = new Headers()
 
     headers.append('Content-Type', 'application/json')
+    headers.append('Authorization', 'Basic ' + window.btoa(`${username}:${password}`))    
 
-    return fetch(`${this.url}/user/login/`, {
+    return fetch(`${this.url}/knox/login/`, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        username,
-        password
-      })
     }).then(res => {
       if (res.status === 400) {
         throw new Error('Gebruikersnaam of wachtwoord incorrect')
       }
       return res.json()
     }).then((res: LoginResponse) => {
-      this.user = res.user
-
-      cache.set('user', res.user)
-      cache.set('committees', res.committees)
-      cache.set('committee_members', res.committee_members)
+      this.token = res.token
+      
+      cache.set('expiry', res.expiry)
+      cache.set('token', res.token)
     })
+  }
+
+  logout(): Promise<void> {
+    return this.get('/knox/logout/')
   }
 }
 
 type LoginResponse = {
-  user: User
-  committees: Committee[]
-  committee_members: CommitteeMember[]
+  expiry: string
+  token: string
 }
 
 export const client = new APIClient()
