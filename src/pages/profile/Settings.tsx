@@ -1,7 +1,6 @@
 import { Box, Button, Divider, FormControl, FormHelperText, FormLabel, Heading, HStack, Radio, RadioGroup, Stack, useColorModeValue, useToast } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
-import { getUserPreferences, setUserPreferences } from '../../utils/user'
-import { getConfig, setTitle } from '../../utils/utils'
+import { setTitle } from '../../utils/utils'
 import LoadingPage from '../LoadingPage'
 
 const pages = {
@@ -30,28 +29,28 @@ export default function Settings() {
 
   useEffect(() => {
     setTitle('Settings')
-    getUserPreferences()
-      .then(prefs => {
-        console.log(prefs)
-        setColorScheme(prefs.colorScheme)
-        setDefaultPage(getKeyByValue(pages, prefs.defaultLocation)!)
-      })
-      .then(load)
+    // getUserPreferences()
+    //   .then(prefs => {
+    //     console.log(prefs)
+    //     setColorScheme(prefs.colorScheme)
+    //     setDefaultPage(getKeyByValue(pages, prefs.defaultLocation)!)
+    //   })
+    //   .then(load)
   }, [])
 
-  useEffect(() => {
-    if (colorScheme === 'light') return
+  // useEffect(() => {
+  //   if (colorScheme === 'light') return
 
-    const c = colorScheme === 'dark' ? 'dark' : 'light'
-    setUserPreferences({ colorScheme: c })
-  }, [colorScheme])
+  //   const c = colorScheme === 'dark' ? 'dark' : 'light'
+  //   setUserPreferences({ colorScheme: c })
+  // }, [colorScheme])
 
-  useEffect(() => {
-    if (defaultPage === 'Home') return
-    // @ts-expect-error ts doet kut
-    const p: string = pages[defaultPage] ?? '/'
-    setUserPreferences({ defaultLocation: p })
-  }, [defaultPage])
+  // useEffect(() => {
+  //   if (defaultPage === 'Home') return
+  //   // @ts-expect-error ts doet kut
+  //   const p: string = pages[defaultPage] ?? '/'
+  //   setUserPreferences({ defaultLocation: p })
+  // }, [defaultPage])
 
   const load = () => setTimeout(() => setLoading(false), getConfig().app.minimalLoadingTime)
 
@@ -62,10 +61,9 @@ export default function Settings() {
     })
   }
 
-  const loadingPage = <LoadingPage h="80vh"/>
-
-
-  if (loading) return loadingPage
+  if (loading) return <div>
+    Tja... geen zin om dit te gaan herschrijven lol.
+  </div>
 
   return <Stack spacing="24px">
     <HStack spacing="20px">

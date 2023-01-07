@@ -3,8 +3,11 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'wouter'
 import { Card } from '../../components/Card'
 import { StyledButton } from '../../components/StyledButton'
+import { Activity } from '../../types/activity'
 import { Activiteit } from '../../types/backend'
-import { fetchBackend, setTitle } from '../../utils/utils'
+import { Committee } from '../../types/users'
+import { client } from '../../utils/client'
+import { setTitle } from '../../utils/utils'
 import LoadingPage from '../LoadingPage'
 
 export default function NewActivity() {
@@ -13,9 +16,8 @@ export default function NewActivity() {
   const [description, setDescription] = useState<string>('')
   const [date, setDate]               = useState<Date>()
   const [location, setLocation]       = useState<string>('Het Colosseum')
-  const [committee, setCommittee]     = useState<string>('')
-
-  const [roles, setRoles] = useState<string[]>([])
+  const [committee, setCommittee]     = useState<number>(-1)
+  const [committees, setCommittees]   = useState<Committee[]>([])
 
   const toast = useToast()
 
@@ -27,8 +29,19 @@ export default function NewActivity() {
   useEffect(() => {
     setTitle('Nieuwe activiteit')
 
-    fetchBackend('roles', true)
-      .then(setRoles)
+    client.get<Committee[]>('/user/committee/')
+      .then(setCommittees)
+      .catch(err => {
+        console.error(err)
+        toast({
+          title: 'Iets ging fout!',
+          description: err.message,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        })
+      })
+
   }, [])
 
   const newToast = (desc: string) => {
@@ -43,21 +56,21 @@ export default function NewActivity() {
 
   const save = async () => {
     if (name === '') return newToast('Vul een naam in')
-    if (committee === '') return newToast('Kies een commissie!')
+    if (committee === -1) return newToast('Kies een commissie!')
     if (description === '')  return newToast('Schrijf eerst even een beschrijving!')
     if (!date) return newToast('Geef een datum op!')
     if (location === '') return newToast('Kies een locatie!')
 
     const activity = {
-      naam: name,
-      omschrijving: description,
-      datum: date.toISOString(),
-      locatie: location,
-      organisatie: committee,
-      aanwezigen: [],
+      name,
+      description,
+      organisation: committee,
+      date: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
+      start_time: `${date.getHours()}:${date.getMinutes()}:00`,
+      location
     }
 
-    await window.db.createDocument('main', 'activiteiten', 'unique()', activity)
+    client.post<Activity>('/activity/create/', activity)
       .then(d => {
         toast({
           title: 'Activiteit aangemaakt',
@@ -66,7 +79,7 @@ export default function NewActivity() {
           duration: 5000,
           isClosable: false,
         })
-        setTimeout(() => setHistory('/kalender/' + d.$id), 5000)
+        setTimeout(() => setHistory('/kalender/' + d.id), 5000)
       })
       .catch(err => {
         toast({
@@ -79,7 +92,7 @@ export default function NewActivity() {
       })
   }
 
-  if (roles.length === 0) return <LoadingPage h="80vh" />
+  if (!committees || committees.length === 0) return <LoadingPage h="80vh" />
 
   return <Box>
     <VStack spacing="20px">
@@ -89,7 +102,7 @@ export default function NewActivity() {
 
       <Divider borderColor={colors.divider} />
 
-      <SimpleGrid columns={[1, null, 2]} spacing="40px" width="95%">
+      <SimpleGrid columns={[1, null, 2]} spacing="20px" width="95%">
         <Card title="Omschrijving">
           <FormControl>
             <FormLabel>Naam</FormLabel>
@@ -107,9 +120,9 @@ export default function NewActivity() {
             <Select
               value={committee}
               focusBorderColor='purple.600'
-              onChange={(e) => setCommittee(e.target.value)}
+              onChange={(e) => setCommittee(parseInt(e.target.value))}
               placeholder="Selecteer een commissie">
-              {roles.map(role => <option key={role} value={role}>{role}</option>)}
+              {committees.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Select>
             <FormHelperText>Wie verzaakt het deze keer?</FormHelperText>
           </FormControl>

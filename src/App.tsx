@@ -1,5 +1,4 @@
 import { ScaleFade } from '@chakra-ui/react'
-import { Models } from 'appwrite'
 import React, { useEffect, useState } from 'react'
 import { Route, Router, Switch, useLocation } from 'wouter'
 import SidebarWithHeader from './components/SidebarWithHeader'
@@ -17,7 +16,6 @@ import Activity from './pages/calendar/Activity'
 import Members from './pages/admin/Members'
 import RolePage from './pages/admin/Roles'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { getRoles, Roles } from './utils/user'
 import AllRoles from './pages/admin/AllRoles'
 import AdminPage from './pages/admin/Admin'
 import Statistics from './pages/inventory/Statistics'
@@ -26,12 +24,19 @@ import Purchases from './pages/inventory/Purchases'
 import NewSale from './pages/inventory/NewSale'
 import Sales from './pages/inventory/Sales'
 import NewActivity from './pages/calendar/NewActivity'
+import FinancialHome from './pages/financial/FinancialHome'
+import SalesMutation from './pages/financial/SalesMutation'
+import { Committee, CommitteeMember, CommitteeName, User } from './types/users'
+import { client } from './utils/client'
+import NewSalesMutation from './pages/financial/NewSalesMutation'
+import { cache } from './utils/cache'
+import Streeplijst from './pages/financial/Streeplijst'
 
 export default function App() {
   // state
   const [loading, setLoading] = useState<boolean>(true)
-  const [profile, setProfile] = useState<Models.Account<Models.Preferences>>()
-  const [roles, setRoles]     = useState<Roles[]>()
+  const [user, setUser]       = useState<User>()
+  const [committees, setCommittees] = useState<Committee[]>()
   const [icon, setIcon]       = useState<string>()
 
   // nav
@@ -41,40 +46,38 @@ export default function App() {
   useEffect(() => {
     const load = () => setTimeout(() => setLoading(false), 2000)
 
-    window.account.get()
-      .then(async () => {
-        const profile = await window.account.get()
-
-        const d = profile.prefs.defaultLocation
-
-        setProfile(profile)
-        let i
-        try {
-          i = window.storage.getFilePreview(
-            import.meta.env.VITE_APPWRITE_USER_ICON_BUCKET_ID,
-            profile.prefs.icon,
-          ).href
-        } catch (e) {
-          i = '/missing.jpg'
+    client.get<{ user: User, committees: Committee[], committee_members: CommitteeMember[]}>('/user/')
+      .then(u => {
+        if (!u.user) {
+          setLocation('/auth')
+          setLoading(false)
+          return
         }
-        setIcon(i)
+        setUser(u.user)
+        setIcon(u.user.profile_picture ?? './missing.jpg')
+        setCommittees(u.committees)
 
-        if (d && d !== '/' && d !== 'disable') setLocation(d)
-      })
-      .then(async () => {
-        const r = await getRoles()
-        setRoles(r)
-      })
-      .then(load)
-      .catch(e => {
-        console.error(e)
-        console.log('not logged in')
-        setLocation('/auth')
+        cache.set('user', u.user)
+        cache.set('committees', u.committees)
+        cache.set('committee_members', u.committee_members)
+
         load()
       })
+      .catch(err => {
+        console.error(err)
+        // This endpoint only works when logged in
+        setLocation('/auth')
+        setLoading(false)
+        return
+      })
+
   }, [])
 
   const loadingPage = <LoadingPage />
+
+  const f = [CommitteeName.FinanCie]
+  const cf = [CommitteeName.Colosseum, CommitteeName.FinanCie]
+  const mcf = [CommitteeName.Colosseum, CommitteeName.FinanCie, CommitteeName.Leden]
 
   if (loading) return loadingPage
 
@@ -86,7 +89,7 @@ export default function App() {
         <Route path="/auth/forgot-password"><ForgotPassword /></Route>
         <Route path="/auth"><Auth /></Route>
 
-        <SidebarWithHeader profile={profile!} icon={icon!} roles={roles!}>
+        <SidebarWithHeader user={user!} icon={icon!} committees={committees!}>
           <Switch>
             {/* Kalender */}
             <Route path="/kalender/nieuw">
@@ -101,46 +104,61 @@ export default function App() {
             
             {/* Colosseum */}
             <Route path="/voorraad/statistieken"> 
-              <ProtectedRoute allowedRoles={[Roles.Colosseum, Roles.Lid]} currentRoles={roles!} element={<Statistics />} />
+              <ProtectedRoute allowed={mcf} current={committees!} element={<Statistics />} />
             </Route>
             
             <Route path="/voorraad/inkopen/nieuw"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<NewPurchase />} />
+              <ProtectedRoute allowed={cf} current={committees!} element={<NewPurchase />} />
             </Route>
 
             <Route path="/voorraad/inkopen"> 
-              <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Purchases />} />
+              <ProtectedRoute allowed={mcf} current={committees!} element={<Purchases />} />
             </Route>
 
             <Route path="/voorraad/streeplijsten/nieuw"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat, Roles.Colosseum]} currentRoles={roles!} element={<NewSale />} />
+              <ProtectedRoute allowed={cf} current={committees!} element={<NewSale />} />
             </Route>
 
             <Route path="/voorraad/streeplijsten"> 
-              <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Sales />} />
+              <ProtectedRoute allowed={mcf} current={committees!} element={<Sales />} />
             </Route>
 
             <Route path="/voorraad"> 
-              <ProtectedRoute allowedRoles={[Roles.Lid, Roles.Colosseum]} currentRoles={roles!} element={<Inventory />} />
+              <ProtectedRoute allowed={mcf} current={committees!} element={<Inventory />} />
             </Route>
 
+            {/* Financieel */}
+            <Route path="/financieel/mutaties/nieuw">
+              <ProtectedRoute allowed={f} current={committees!} element={<NewSalesMutation committees={committees!} />} />
+            </Route>
+            <Route path="/financieel/mutaties/:activiteitId">
+              <ProtectedRoute allowed={f} current={committees!} element={<SalesMutation />} />
+            </Route>
+            
+            <Route path="/financieel/streeplijst/verwerk">
+              <ProtectedRoute allowed={f} current={committees!} element={<Streeplijst />} />
+            </Route>
+
+            <Route path="/financieel">
+              <FinancialHome />
+            </Route>
             
 
             {/* Admin routes */}
             <Route path="/admin/leden"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<Members/>} />
+              <ProtectedRoute allowed={[]} current={committees!} element={<Members/>} />
             </Route>
 
             <Route path="/admin/rollen/:role">
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<RolePage />} />
+              <ProtectedRoute allowed={[]} current={committees!} element={<RolePage />} />
             </Route>
 
             <Route path="/admin/rollen">
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<AllRoles />} />
+              <ProtectedRoute allowed={[]} current={committees!} element={<AllRoles />} />
             </Route>
 
             <Route path="/admin"> 
-              <ProtectedRoute allowedRoles={[Roles.Admin, Roles.Senaat]} currentRoles={roles!} element={<AdminPage/>} />
+              <ProtectedRoute allowed={[]} current={committees!} element={<AdminPage/>} />
             </Route>
 
             {/* User profile */}

@@ -1,7 +1,8 @@
-import { Spinner, Stack, useColorModeValue } from '@chakra-ui/react'
+import { Heading, Spinner, Stack, useColorModeValue } from '@chakra-ui/react'
 
 type LoadingPageProps = {
   h?: string
+  title?: string
 }
 
 export default function LoadingPage(props: LoadingPageProps) {
@@ -13,6 +14,11 @@ export default function LoadingPage(props: LoadingPageProps) {
     justify={'center'}
     overflow={'hidden'}
     bg={bgValue}>
-    <Spinner size="xl" emptyColor='purple.400' color='purple.800' />
+    <Spinner size="xl" emptyColor='purple.400' color='purple.800' /> 
+    {props.title !== undefined
+      ? <Heading pt="20px">
+        {props.title ?? 'Laden...'}
+      </Heading>
+      : null}
   </Stack>
 }

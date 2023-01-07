@@ -25,12 +25,49 @@ export type Product = {
   inhoud: number
 }
 
-export type Inkoop = {
+export enum TransactieType {
+  inkoop = 'inkoop',
+  streeplijst = 'streeplijst',
+  statiegeld = 'statiegeld',
+  declaratie = 'declaratie',
+  overig = 'overig',
+}
+
+
+export type Transactie = {
+  $id: string
+  $createdAt: string
+  $updatedAt: string
   userId: string
   productId: string
-  hoeveelheid: number
-  prijs: number
-  statiegeld: number
-  winkel: string
-  datum: string
+
+  transactieType: TransactieType
+  omschrijving: string
+
+  aantal: number | 1
+  prijsPerStuk?: number
+  mutatie: number
+
+  verrekend: boolean
 }
+
+// export type Consumptie = Transactie & {
+//   product: Product
+//   aantal: number
+//   prijs: number
+//   totaalBedrag: number
+//   statiegeld: number
+//   winkel: string
+// }
+
+// export type VerkoopTrasnactie = Transactie & {
+//   product: Product
+//   aantal: number
+//   prijsPerStuk: number
+//   prijsTotaal: number
+// }
+
+// export type OverigeTransactive = Transactie & {
+//   omschrijving: string
+//   prijs: number
+// }
