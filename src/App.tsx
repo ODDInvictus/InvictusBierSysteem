@@ -31,6 +31,7 @@ import { client } from './utils/client'
 import NewSalesMutation from './pages/financial/NewSalesMutation'
 import { cache } from './utils/cache'
 import Streeplijst from './pages/financial/Streeplijst'
+import Chugs from './pages/chugs/Chugs'
 
 export default function App() {
   // state
@@ -165,6 +166,10 @@ export default function App() {
             <Route path="/profile"> <EditProfile /> </Route>
             <Route path="/about"> <About /> </Route>
 
+            {/* Chugs */}
+            <Route path="/chugs"> <Chugs /> </Route>
+
+            {/* Other */}
             <Route path="/"> <Index /> </Route>        
             <Route path="/:rest*"> <NotFound /> </Route>
           </Switch>

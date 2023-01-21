@@ -1,0 +1,3 @@
+tr:has(> .clickable-td:hover) {
+  text-decoration: underline;
+}

@@ -33,6 +33,7 @@ import { AiOutlineSchedule } from 'react-icons/ai'
 import { FaPeopleCarry } from 'react-icons/fa'
 import { TbZoomMoney } from 'react-icons/tb' 
 import { MdOutlineInventory2, MdOutlinePeopleAlt, MdOutlineAdminPanelSettings } from 'react-icons/md'
+import { IoBeerOutline } from 'react-icons/io5'
 import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
@@ -147,6 +148,9 @@ const SidebarContent = ({ onClose, committees, ...rest }: SidebarProps) => {
       </NavItem>
       <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={!isAdmin} onClick={onClose}>
         Commissies
+      </NavItem>
+      <NavItem key={'Strafbakken'} icon={IoBeerOutline} link="/chugs" onClick={onClose}>
+        Strafbakken
       </NavItem>
       <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen" onClick={onClose}>
         Instellingen
