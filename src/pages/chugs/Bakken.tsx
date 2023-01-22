@@ -19,7 +19,7 @@ export default function Chugs() {
   const [ err, setErr ] = useState<string | undefined>(undefined)
 
   useEffect( () => {
-    client.get('/chugs/bakken/')
+    client.get<bakkenOverview[]>('/chugs/bakken/')
     .then(setBakken)
     .catch(setErr)
   },[])

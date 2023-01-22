@@ -23,7 +23,7 @@ export default function Strafbakken() {
   const [ err, setErr ] = useState<string | undefined>(undefined)
 
   useEffect( () => {
-    client.get('/chugs/strafbakken/')
+    client.get<bakkenOverview[]>('/chugs/strafbakken/')
     .then(setStrafbakken)
     .catch(setErr)
   },[])

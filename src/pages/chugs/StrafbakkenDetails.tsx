@@ -19,7 +19,7 @@ export default function StrafbakkenDetails() {
   const [ err, setErr ] = useState()
 
   useEffect(() => {
-    client.get(`/chugs/strafbakken/${username}`)
+    client.get<bakDetails>(`/chugs/strafbakken/${username}`)
     .then(setStrafbakkenDetails)
     .catch(setErr)
   }, [])
