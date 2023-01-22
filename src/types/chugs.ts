@@ -1,27 +1,18 @@
-export type Bak = {
+export type bak = {
   giver: string
+  giver_username: string
   reason: string
   date: string
+  dateReceiver: string | undefined
 }
 
-export type StrafbakOverview = {
-  username: string
-  nickname: string
-  strafbakken: number
-}
-
-export type BakOverview = {
+export type bakkenOverview = {
   username: string
   nickname: string
   bakken: number
 }
 
-export type StrafbakDetails = {
-  strafbakken: number
-  details: Bak[]
-}
-
-export type BakDetails = {
+export type bakDetails = {
   bakken: number
-  details: Bak[]
+  details: bak[]
 }

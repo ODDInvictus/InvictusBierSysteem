@@ -149,7 +149,7 @@ const SidebarContent = ({ onClose, committees, ...rest }: SidebarProps) => {
       <NavItem key={'Commissies'} icon={FaPeopleCarry} link="/admin/rollen" hidden={!isAdmin} onClick={onClose}>
         Commissies
       </NavItem>
-      <NavItem key={'Strafbakken'} icon={IoBeerOutline} link="/chugs" onClick={onClose}>
+      <NavItem key={'Strafbakken'} icon={IoBeerOutline} link="/strafbakken" onClick={onClose}>
         Strafbakken
       </NavItem>
       <NavItem key={'Instellingen'} icon={FiSettings} link="/instellingen" onClick={onClose}>

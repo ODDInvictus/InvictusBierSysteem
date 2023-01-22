@@ -31,7 +31,10 @@ import { client } from './utils/client'
 import NewSalesMutation from './pages/financial/NewSalesMutation'
 import { cache } from './utils/cache'
 import Streeplijst from './pages/financial/Streeplijst'
-import Chugs from './pages/chugs/Chugs'
+import Strafbakken from './pages/chugs/Strafbakken'
+import Bakken from './pages/chugs/Bakken'
+import StrafbakkenDetails from './pages/chugs/StrafbakkenDetails'
+import BakkenDetails from './pages/chugs/BakkenDetails'
 
 export default function App() {
   // state
@@ -42,7 +45,6 @@ export default function App() {
 
   // nav
   const [_, setLocation] = useLocation()
-
 
   useEffect(() => {
     const load = () => setTimeout(() => setLoading(false), 2000)
@@ -167,7 +169,10 @@ export default function App() {
             <Route path="/about"> <About /> </Route>
 
             {/* Chugs */}
-            <Route path="/chugs"> <Chugs /> </Route>
+            <Route path="/strafbakken"> <Strafbakken /> </Route>
+            <Route path="/bakken"> <Bakken /> </Route>
+            <Route path="/strafbakken/:username"> <StrafbakkenDetails /> </Route>
+            <Route path="/bakken/:username"> <BakkenDetails /> </Route>
 
             {/* Other */}
             <Route path="/"> <Index /> </Route>        

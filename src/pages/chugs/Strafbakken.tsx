@@ -4,10 +4,10 @@ import { AddIcon, MinusIcon } from "@chakra-ui/icons"
 import { useState, useEffect } from "react"
 import { useLocation } from 'wouter'
 import { client } from '../../utils/client'
-import { StrafbakOverview } from '../../types/chugs'
+import { bakkenOverview } from '../../types/chugs'
 import '../../styles/Chugs.css'
 
-export default function Chugs() {
+export default function Strafbakken() {
 
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700')
@@ -19,7 +19,7 @@ export default function Chugs() {
 
   const [ selected, setSelected ] = useState<string | undefined>(undefined)
 
-  const [ strafbakken, setStrafbakken ] = useState<StrafbakOverview[]>([])
+  const [ strafbakken, setStrafbakken ] = useState<bakkenOverview[]>([])
   const [ err, setErr ] = useState<string | undefined>(undefined)
 
   useEffect( () => {
@@ -30,10 +30,10 @@ export default function Chugs() {
 
   function trekbak(name: string) {
     let succes = false;
-    let newStrafbakken: StrafbakOverview[] = [];
+    let newStrafbakken: bakkenOverview[] = [];
     strafbakken.forEach(s => {
-      if (s.username === name && s.strafbakken > 0) {
-        s.strafbakken -= 1
+      if (s.username === name && s.bakken > 0) {
+        s.bakken -= 1
         succes = true
       }
       newStrafbakken.push(s)
@@ -90,16 +90,16 @@ export default function Chugs() {
               {strafbakken.map(s => (
                 <Tr key={s.username}>
                   <Td
-                    onClick={() => setLocation(`/chugs/${s.username}/`)}
+                    onClick={() => setLocation(`/strafbakken/${s.username}/`)}
                     cursor="pointer"
                     className="clickable-td">
                     {(s.nickname||s.username).charAt(0).toUpperCase() + (s.nickname||s.username).slice(1)}
                   </Td>
                   <Td 
-                    onClick={() => setLocation(`/chugs/${s.username}/`)}
+                    onClick={() => setLocation(`/strafbakken/${s.username}/`)}
                     cursor="pointer"
                     className="clickable-td">
-                    {s.strafbakken}
+                    {s.bakken}
                   </Td>
                   <Td>
                     <Flex gap="24px">
@@ -113,7 +113,7 @@ export default function Chugs() {
                         _hover={{opacity: 0.7}}
                       />
 
-                      {(s.strafbakken > 0) ? 
+                      {(s.bakken > 0) ? 
                       <MinusIcon 
                         onClick={() => trekbak(s.username)}
                         cursor="pointer"
@@ -136,8 +136,8 @@ export default function Chugs() {
 type ReasonProps = {
   selected: string | undefined
   isOpen: boolean
-  strafbakken: StrafbakOverview[]
-  setStrafbakken: (x:StrafbakOverview[]) => void
+  strafbakken: bakkenOverview[]
+  setStrafbakken: (x:bakkenOverview[]) => void
   onClose: () => void
   onOpen: () => void
 }
@@ -154,12 +154,13 @@ function Reason(props: ReasonProps) {
   }
 
   function save() {
+    if (reason === '') setReason(undefined)
     client.post('/chugs/strafbakken/', {'receiver': props.selected, 'reason': reason})
     .then(() => {
-      let newStrafbakken: StrafbakOverview[] = [];
+      let newStrafbakken: bakkenOverview[] = [];
       props.strafbakken.forEach(s => {
         if (s.username === props.selected) {
-          s.strafbakken += 1
+          s.bakken += 1
         }
         newStrafbakken.push(s)
       })
