@@ -86,6 +86,9 @@ export default function Strafbakken() {
       />
       <VStack spacing="20px">
         <Title value="Strafbakken" />
+        <StyledButton onClick={() => setLocation('/bakken/')}>
+          Wie is er meesterbakker?
+        </StyledButton>
         <TableContainer>
           <Table variant='striped' colorScheme='purple'>
             <Thead>
@@ -139,7 +142,6 @@ export default function Strafbakken() {
             </Tbody>
           </Table>
         </TableContainer>
-        <Button>Wie is er meesterbakker?</Button>
       </VStack>
     </Box>
   );

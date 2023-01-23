@@ -5,6 +5,7 @@ import { client } from '../../utils/client'
 import { bakkenOverview } from '../../types/chugs'
 import Title from '../../components/Title'
 import '../../styles/Chugs.css'
+import { StyledButton } from '../../components/StyledButton'
 
 export default function Chugs() {
 
@@ -40,7 +41,7 @@ export default function Chugs() {
   if (loading) return (
     <Box>
       <VStack spacing="20px">
-        <Title value="Strafbakken" />
+        <Title value="Getrokken bakken" />
         <Center>
           <Spinner />
         </Center>
@@ -51,7 +52,10 @@ export default function Chugs() {
   return (
     <Box>
       <VStack spacing="20px">
-        <Title value="Strafbakken" />
+        <Title value="Getrokken bakken" />
+        <StyledButton onClick={() => setLocation('/strafbakken/')}>
+          Op hoveel staat iedereen?
+        </StyledButton>
         <TableContainer>
           <Table variant='striped' colorScheme='purple'>
             <Thead>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { bakDetails } from '../../types/chugs'
 import { client } from '../../utils/client'
 import Title from '../../components/Title'
+import { StyledButton } from '../../components/StyledButton'
 
 export default function StrafbakkenDetails() {
 
@@ -62,8 +63,11 @@ export default function StrafbakkenDetails() {
     <Box>
       <VStack spacing="20px">
         <Title value={
-          `${username.charAt(0).toUpperCase() + username.slice(1)} zijn ${strafbakkenDetails.bakken} strafbak${(strafbakkenDetails.bakken !== 1) ? 'ken' : ''}`
+          `${formatName(username)} zijn ${strafbakkenDetails.bakken} strafbak${(strafbakkenDetails.bakken !== 1) ? 'ken' : ''}`
         }/>
+        <StyledButton onClick={() => setLocation(`/bakken/${username}/`)}>
+          Welke bakken heeft {formatName(username)} al getrokken?
+        </StyledButton>
         <TableContainer>
           <Table variant='striped' colorScheme='purple'>
             <Thead>

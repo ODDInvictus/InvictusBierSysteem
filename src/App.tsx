@@ -49,7 +49,7 @@ export default function App() {
   const [_, setLocation] = useLocation()
 
   useEffect(() => {
-    const load = () => setTimeout(() => setLoading(false), 2000)
+    const load = () => setTimeout(() => setLoading(false), 0)
 
     client.get<{ user: User, committees: Committee[], committee_members: CommitteeMember[]}>('/user/')
       .then(u => {
