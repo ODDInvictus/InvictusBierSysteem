@@ -49,7 +49,7 @@ export default function App() {
   const [_, setLocation] = useLocation()
 
   useEffect(() => {
-    const load = () => setTimeout(() => setLoading(false), 0)
+    const load = () => setTimeout(() => setLoading(false), 500)
 
     client.get<{ user: User, committees: Committee[], committee_members: CommitteeMember[]}>('/user/')
       .then(u => {
@@ -82,8 +82,7 @@ export default function App() {
   const getStrafbakken = (username: string) => {
     client.get<bakDetails>(`/chugs/strafbakken/${username}`)
       .then(res => {
-        cache.set(`chugs_${username}`, res)
-        window.dispatchEvent(new Event('storage'))
+        cache.set(`strafbakken_${username}`, res)
       })
       .catch(console.error)
   }

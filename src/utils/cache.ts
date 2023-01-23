@@ -1,22 +1,35 @@
-
 class Cache {
 
-  set(key: string, obj: unknown) {
+  set(key: string, obj: any) {
     localStorage.setItem(`ibs::${key}`, JSON.stringify(obj))
+    window.dispatchEvent(new Event(`ibs::cache::${key}`))
   }
 
-  get<T>(key: string): T | undefined {
+  getWhenAvaliable<T>(key: string): Promise<any> {
+    // Is it already in local storage?
     const cache = localStorage.getItem(`ibs::${key}`)
-    if (cache) {
-      return JSON.parse(cache)
+    if (cache !== null) {
+      return new Promise((resolve, reject) => {resolve(JSON.parse(cache))})
     }
-    return undefined
+
+    // Add it to to waiting
+    return new Promise((resolve, reject) => {
+      window.addEventListener(`ibs::cache::${key}`, () => {
+        resolve(this.get(key))
+      })
+    })
   }
 
   remove(key: string) {
     localStorage.removeItem(`ibs::${key}`)
+    window.dispatchEvent(new Event(`ibs::cache::${key}`))
   }
 
+  get<T>(key: string): T | undefined {
+    const cache = localStorage.getItem(`ibs::${key}`)
+    if (cache) return JSON.parse(cache)
+    return undefined
+  }
 }
 
 export const cache = new Cache()

@@ -17,23 +17,10 @@ export default function Index() {
   useEffect(() => {
     setTitle('Home')
 
-    const checkStrafbakkenCache = () => {
-      const strafbakken = cache.get<bakDetails | undefined>(`chugs_${user.username}`)
-      if (strafbakken !== undefined) {
-        setStrafbakken(strafbakken.bakken)
-        window.removeEventListener('storage', checkStrafbakkenCache)
-      }
-      return strafbakken
-    }
-
-    const strafbakken = checkStrafbakkenCache()
-    if (strafbakken === undefined) {
-      window.addEventListener('storage', checkStrafbakkenCache)
-    }
-
-    return () => {
-      window.removeEventListener('storage', checkStrafbakkenCache)
-    }
+    cache.getWhenAvaliable<Promise<bakDetails>>(`strafbakken_${user.username}`)
+    .then( (res: bakDetails) => {
+      setStrafbakken(res.bakken)
+    })
   }, [])
 
   function OpinionOnStrafbakken(strafbakken: Number | undefined) {
