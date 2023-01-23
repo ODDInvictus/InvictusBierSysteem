@@ -1,15 +1,48 @@
-import { Box, Divider, Heading, Image, SimpleGrid, Stat, StatHelpText, StatLabel, StatNumber, Text, useColorModeValue, VStack } from '@chakra-ui/react'
-import { useEffect } from 'react'
+import { Box, Divider, Heading, Image, SimpleGrid, Stat, StatHelpText, StatLabel, StatNumber, Text, useColorModeValue, VStack, Spinner } from '@chakra-ui/react'
+import { useEffect, useState } from 'react'
 import { setTitle } from '../utils/utils'
+import { cache } from '../utils/cache'
+import { User } from '../types/users'
+import { bakDetails } from '../types/chugs'
 
 export default function Index() {
 
   const colors = {
     divider: useColorModeValue('gray.300', 'gray.700'),
   }
+
+  const [user] = useState<User>(cache.get<User>('user')!)
+  const [ strafbakken, setStrafbakken ] = useState<Number | undefined>(undefined)
+
   useEffect(() => {
-    setTitle('Home')  
-  })
+    setTitle('Home')
+
+    const checkStrafbakkenCache = () => {
+      const strafbakken = cache.get<bakDetails | undefined>(`chugs_${user.username}`)
+      if (strafbakken !== undefined) {
+        setStrafbakken(strafbakken.bakken)
+        window.removeEventListener('storage', checkStrafbakkenCache)
+      }
+      return strafbakken
+    }
+
+    const strafbakken = checkStrafbakkenCache()
+    if (strafbakken === undefined) {
+      window.addEventListener('storage', checkStrafbakkenCache)
+    }
+
+    return () => {
+      window.removeEventListener('storage', checkStrafbakkenCache)
+    }
+  }, [])
+
+  function OpinionOnStrafbakken(strafbakken: Number | undefined) {
+    if (strafbakken === undefined) return ''
+    if (strafbakken < 6) return 'Laf'
+    if (strafbakken < 11) return 'Lekker vouwen'
+    if (strafbakken < 21) return 'Aan de bak'
+    return 'Oef'
+  }
 
   return <Box>
     <VStack spacing="20px">
@@ -40,8 +73,10 @@ export default function Index() {
 
         <Stat>
           <StatLabel>Strafbakken</StatLabel>
-          <StatNumber>21</StatNumber>
-          <StatHelpText>oef</StatHelpText>
+          <StatNumber>
+            {(strafbakken === undefined) ? <Spinner /> : String(strafbakken)}
+          </StatNumber>
+          <StatHelpText>{OpinionOnStrafbakken(strafbakken)}</StatHelpText>
         </Stat>
       </SimpleGrid>
 

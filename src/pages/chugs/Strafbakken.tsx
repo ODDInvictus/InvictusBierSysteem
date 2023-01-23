@@ -1,17 +1,15 @@
-import { Box, Divider, Heading, useColorModeValue, VStack, Flex, TableContainer, Table, Thead, Tr, Tbody, Th, Td, Center, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter, FormControl, FormLabel, Input, Button, useDisclosure, useToast } from "@chakra-ui/react"
+import { Box, Heading, VStack, Flex, TableContainer, Table, Thead, Tr, Tbody, Th, Td, Center, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter, FormControl, FormLabel, Input, Button, useDisclosure, useToast, Spinner, Link as LinkElem } from '@chakra-ui/react'
 import { StyledButton } from '../../components/StyledButton'
-import { AddIcon, MinusIcon } from "@chakra-ui/icons"
-import { useState, useEffect } from "react"
-import { useLocation } from 'wouter'
+import { AddIcon, MinusIcon } from '@chakra-ui/icons'
+import { useState, useEffect } from 'react'
+import { useLocation, Link } from 'wouter'
 import { client } from '../../utils/client'
 import { bakkenOverview } from '../../types/chugs'
 import '../../styles/Chugs.css'
+import { setTitle } from '../../utils/utils'
+import Title from '../../components/Title'
 
 export default function Strafbakken() {
-
-  const colors = {
-    divider: useColorModeValue('gray.300', 'gray.700')
-  }
 
   const [_, setLocation] = useLocation()
 
@@ -20,11 +18,17 @@ export default function Strafbakken() {
   const [ selected, setSelected ] = useState<string | undefined>(undefined)
 
   const [ strafbakken, setStrafbakken ] = useState<bakkenOverview[]>([])
+  const [ loading, setLoading ] = useState<boolean>(true)
   const [ err, setErr ] = useState<string | undefined>(undefined)
 
   useEffect( () => {
+    setTitle('Strafbakken')
+    setLoading(true)
     client.get<bakkenOverview[]>('/chugs/strafbakken/')
-    .then(setStrafbakken)
+    .then( (res) => {
+      setStrafbakken(res)
+      setLoading(false)
+    })
     .catch(setErr)
   },[])
 
@@ -49,14 +53,22 @@ export default function Strafbakken() {
   if (err) return (
     <Box>
       <VStack spacing="20px">
-        <Heading as="h1" size="2xl">
-          Strafbakken
-        </Heading>
-        <Divider borderColor={colors.divider} />
+        <Title value="Strafbakken" />
         <Center>
           <Heading>
             Is weer stuk...
           </Heading>
+        </Center>
+      </VStack>
+    </Box>
+  )
+
+  if (loading) return (
+    <Box>
+      <VStack spacing="20px">
+        <Title value="Strafbakken" />
+        <Center>
+          <Spinner />
         </Center>
       </VStack>
     </Box>
@@ -73,10 +85,7 @@ export default function Strafbakken() {
         setStrafbakken={setStrafbakken}
       />
       <VStack spacing="20px">
-        <Heading as="h1" size="2xl">
-          Strafbakken
-        </Heading>
-        <Divider borderColor={colors.divider} />
+        <Title value="Strafbakken" />
         <TableContainer>
           <Table variant='striped' colorScheme='purple'>
             <Thead>
@@ -90,16 +99,18 @@ export default function Strafbakken() {
               {strafbakken.map(s => (
                 <Tr key={s.username}>
                   <Td
-                    onClick={() => setLocation(`/strafbakken/${s.username}/`)}
                     cursor="pointer"
                     className="clickable-td">
-                    {(s.nickname||s.username).charAt(0).toUpperCase() + (s.nickname||s.username).slice(1)}
+                    <LinkElem as={Link} href={`/strafbakken/${s.username}/`}>
+                      {(s.nickname||s.username).charAt(0).toUpperCase() + (s.nickname||s.username).slice(1)}
+                    </LinkElem>
                   </Td>
                   <Td 
-                    onClick={() => setLocation(`/strafbakken/${s.username}/`)}
                     cursor="pointer"
                     className="clickable-td">
-                    {s.bakken}
+                    <LinkElem as={Link} href={`/strafbakken/${s.username}/`}>
+                        {s.bakken}
+                    </LinkElem>
                   </Td>
                   <Td>
                     <Flex gap="24px">
@@ -128,6 +139,7 @@ export default function Strafbakken() {
             </Tbody>
           </Table>
         </TableContainer>
+        <Button>Wie is er meesterbakker?</Button>
       </VStack>
     </Box>
   );

@@ -5,7 +5,7 @@ import SidebarWithHeader from './components/SidebarWithHeader'
 import About from './pages/About'
 import Auth from './pages/auth/Auth'
 import ForgotPassword from './pages/auth/ForgotPassword'
-import Index from './pages/Index'
+//import Index from './pages/Index'
 import Inventory from './pages/inventory/Inventory'
 import LoadingPage from './pages/LoadingPage'
 import NotFound from './pages/NotFound'
@@ -35,6 +35,8 @@ import Strafbakken from './pages/chugs/Strafbakken'
 import Bakken from './pages/chugs/Bakken'
 import StrafbakkenDetails from './pages/chugs/StrafbakkenDetails'
 import BakkenDetails from './pages/chugs/BakkenDetails'
+import { bakDetails } from './types/chugs'
+import Index from './pages/Index'
 
 export default function App() {
   // state
@@ -64,6 +66,8 @@ export default function App() {
         cache.set('committees', u.committees)
         cache.set('committee_members', u.committee_members)
 
+        getStrafbakken(u.user.username)
+
         load()
       })
       .catch(err => {
@@ -73,8 +77,16 @@ export default function App() {
         setLoading(false)
         return
       })
-
   }, [])
+
+  const getStrafbakken = (username: string) => {
+    client.get<bakDetails>(`/chugs/strafbakken/${username}`)
+      .then(res => {
+        cache.set(`chugs_${username}`, res)
+        window.dispatchEvent(new Event('storage'))
+      })
+      .catch(console.error)
+  }
 
   const loadingPage = <LoadingPage />
 

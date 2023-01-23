@@ -1,28 +1,30 @@
-import { Box, Divider, Heading, useColorModeValue, VStack, Flex, TableContainer, Table, Thead, Tr, Tbody, Th, Td, Center, Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody, ModalCloseButton, ModalFooter, FormControl, FormLabel, Input, Button, useDisclosure, useToast, Text, textDecoration } from "@chakra-ui/react"
+import { Box, Heading, VStack, TableContainer, Table, Thead, Tr, Tbody, Th, Td, Center, Text, Spinner } from '@chakra-ui/react'
 import { useRoute, useLocation } from 'wouter'
 import { useEffect, useState } from 'react'
 import { bakDetails } from '../../types/chugs'
-import { client } from "../../utils/client"
+import { client } from '../../utils/client'
+import Title from '../../components/Title'
 
 export default function StrafbakkenDetails() {
 
-  const username = useRoute('/bakken/:username')[1]?.username
+  const [ username, setUsername ] = useState<string | undefined>(useRoute('/bakken/:username')[1]?.username)
   if (!username) return <Text>Ja geen idee wat hier gebeurd</Text>
-
-  const colors = {
-    divider: useColorModeValue('gray.300', 'gray.700')
-  }
 
   const [_, setLocation] = useLocation()
 
   const [ bakkenDetails, setBakkenDetails ] = useState<bakDetails>({bakken: 0, details: []})
+  const [ loading, setLoading ] = useState<boolean>(true)
   const [ err, setErr ] = useState()
 
   useEffect(() => {
+    setLoading(true)
     client.get<bakDetails>(`/chugs/bakken/${username}`)
-    .then(setBakkenDetails)
+    .then((res) => {
+      setBakkenDetails(res)
+      setLoading(false)
+    })
     .catch(setErr)
-  }, [])
+  }, [username])
 
   const formatDate = (str: string) => {
     const d = new Date(str)
@@ -37,10 +39,7 @@ export default function StrafbakkenDetails() {
   if (err) return (
     <Box>
       <VStack spacing="20px">
-        <Heading as="h1" size="2xl">
-          Strafbakken
-        </Heading>
-        <Divider borderColor={colors.divider} />
+        <Title value="Strafbakken" />
         <Center>
           <Heading>
             Is weer stuk...
@@ -50,13 +49,22 @@ export default function StrafbakkenDetails() {
     </Box>
   )
 
+  if (loading) return (
+    <Box>
+      <VStack spacing="20px">
+        <Center>
+          <Spinner />
+        </Center>
+      </VStack>
+    </Box>
+  )
+
   return (
     <Box>
       <VStack spacing="20px">
-        <Heading as="h1" size="2xl" textAlign='center'>
-          {`${username.charAt(0).toUpperCase() + username.slice(1)} zijn ${bakkenDetails.bakken} strafbak${(bakkenDetails.bakken !== 1) ? 'ken' : ''}`}
-        </Heading>
-        <Divider borderColor={colors.divider} />
+        <Title value={
+          `${username.charAt(0).toUpperCase() + username.slice(1)} zijn ${bakkenDetails.bakken} bak${(bakkenDetails.bakken !== 1) ? 'ken' : ''}`
+        }/>
         <TableContainer>
           <Table variant='striped' colorScheme='purple'>
             <Thead>
@@ -67,10 +75,13 @@ export default function StrafbakkenDetails() {
               </Tr>
             </Thead>
             <Tbody>
-              {bakkenDetails.details.map(s => (
-                <Tr>
+              {bakkenDetails.details.map( (s, i) => (
+                <Tr key={i}>
                   <Td 
-                    onClick={() => setLocation(`/bakken/${s.giver_username}/`)}
+                    onClick={() => {
+                      setLocation(`/bakken/${s.giver_username}/`)
+                      setUsername(s.giver_username)
+                    }}
                     _hover={{textDecoration: 'underline'}}
                     cursor='pointer'
                   >
