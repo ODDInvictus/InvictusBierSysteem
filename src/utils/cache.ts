@@ -5,18 +5,18 @@ class Cache {
     window.dispatchEvent(new Event(`ibs::cache::${key}`))
   }
 
-  getWhenAvaliable<T>(key: string): Promise<any> {
+  getWhenAvaliable<T>(key: string): Promise<T> {
     // Is it already in local storage?
     const cache = localStorage.getItem(`ibs::${key}`)
     if (cache !== null) {
       return new Promise((resolve, reject) => {resolve(JSON.parse(cache))})
     }
 
-    // Add it to to waiting
+    // If not, wait for the event to trigger
     return new Promise((resolve, reject) => {
       window.addEventListener(`ibs::cache::${key}`, () => {
-        resolve(this.get(key))
-      })
+        resolve(this.get<T>(key)!)
+      }, {once: true})
     })
   }
 

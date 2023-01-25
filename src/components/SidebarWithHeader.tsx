@@ -37,7 +37,6 @@ import { IoBeerOutline } from 'react-icons/io5'
 import { IconType } from 'react-icons'
 import { Link as NavLink, useLocation } from 'wouter'
 import config from '../../config.json'
-import { Models } from 'appwrite'
 import { Committee, CommitteeName, singularCommitteeName, User } from '../types/users'
 import { client } from '../utils/client'
 

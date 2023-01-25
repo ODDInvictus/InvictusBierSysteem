@@ -43,7 +43,7 @@ export default function Chugs() {
       <VStack spacing="20px">
         <Title value="Getrokken bakken" />
         <Center>
-          <Spinner />
+          <Spinner marginTop="calc(50vh - 80px)" />
         </Center>
       </VStack>
     </Box>

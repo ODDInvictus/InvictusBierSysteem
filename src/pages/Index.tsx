@@ -17,8 +17,8 @@ export default function Index() {
   useEffect(() => {
     setTitle('Home')
 
-    cache.getWhenAvaliable<Promise<bakDetails>>(`strafbakken_${user.username}`)
-    .then( (res: bakDetails) => {
+    cache.getWhenAvaliable<bakDetails>(`strafbakken_${user.username}`)
+    .then( (res) => {
       setStrafbakken(res.bakken)
     })
   }, [])
@@ -28,7 +28,7 @@ export default function Index() {
     if (strafbakken < 6) return 'Laf'
     if (strafbakken < 11) return 'Lekker vouwen'
     if (strafbakken < 21) return 'Aan de bak'
-    return 'Oef'
+    return 'Oei'
   }
 
   return <Box>
